@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinCalc Pro — Personal Finance Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    /* LIGHT THEME — white background */
+    --bg:#FFFFFF;
+    --surface:#FFFFFF;
+    --surface2:#F4F6FA;
+    --border:#E2E6F0;
+    --text:#111827;
+    --text2:#5B6478;
+    --text3:#9CA3B8;
+    --accent:#059669;
+    --accent-l:rgba(5,150,105,0.10);
+    --accent2:#EA580C;
+    --accent2-l:rgba(234,88,12,0.10);
+    --blue:#2563EB;
+    --blue-l:rgba(37,99,235,0.10);
+    --purple:#7C3AED;
+    --purple-l:rgba(124,58,237,0.10);
+    --teal:#0D9488;
+    --teal-l:rgba(13,148,136,0.10);
+    --red:#DC2626;
+    --red-l:rgba(220,38,38,0.10);
+    --amber:#D97706;
+    --amber-l:rgba(217,119,6,0.10);
+    --shadow:0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    --radius:12px;
+    --font:'DM Sans',sans-serif;
+    --font-serif:'DM Serif Display',serif;
+    --chart-grid:rgba(0,0,0,0.06);
+    --chart-border:#FFFFFF;
+  }
+  [data-theme="dark"]{
+    /* DARK THEME — black background */
+    --bg:#0A0A0A;
+    --surface:#141414;
+    --surface2:#1C1C1C;
+    --border:#2A2A2A;
+    --text:#F0F0F0;
+    --text2:#8A8A9A;
+    --text3:#4A4A5A;
+    --accent:#34D399;
+    --accent-l:rgba(52,211,153,0.12);
+    --accent2:#F97316;
+    --accent2-l:rgba(249,115,22,0.12);
+    --blue:#60A5FA;
+    --blue-l:rgba(96,165,250,0.12);
+    --purple:#A78BFA;
+    --purple-l:rgba(167,139,250,0.12);
+    --teal:#2DD4BF;
+    --teal-l:rgba(45,212,191,0.12);
+    --red:#F87171;
+    --red-l:rgba(248,113,113,0.12);
+    --amber:#FBBF24;
+    --amber-l:rgba(251,191,36,0.12);
+    --shadow:0 1px 4px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.4);
+    --chart-grid:rgba(255,255,255,0.06);
+    --chart-border:#141414;
+  }
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+
+  /* HEADER */
+  .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:2rem}
+  .logo{padding:1rem 0;display:flex;align-items:center;gap:10px}
+  .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+  .logo-text{font-family:var(--font-serif);font-size:1.25rem;color:var(--text);letter-spacing:-0.01em}
+  .logo-text span{color:var(--accent)}
+  nav{display:flex;gap:2px;overflow-x:auto;padding:0.5rem 0;flex:1}
+  nav::-webkit-scrollbar{display:none}
+  .nav-tab{padding:6px 14px;border-radius:8px;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all 0.15s}
+  .nav-tab:hover{background:var(--surface2);color:var(--text)}
+  .nav-tab.active{background:var(--accent-l);color:var(--accent)}
+
+  /* LAYOUT */
+  .container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+  .page{display:none}.page.active{display:block}
+  .page-title{font-family:var(--font-serif);font-size:1.75rem;color:var(--text);margin-bottom:0.25rem;letter-spacing:-0.02em}
+  .page-subtitle{color:var(--text2);font-size:14px;margin-bottom:2rem}
+
+  /* GRID */
+  .calc-grid{display:grid;grid-template-columns:380px 1fr;gap:1.5rem;align-items:start}
+  @media(max-width:800px){.calc-grid{grid-template-columns:1fr}}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow)}
+  .card-title{font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text3);margin-bottom:1.25rem}
+
+  /* FORM */
+  .field{margin-bottom:1.25rem}
+  .field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+  .input-wrap{position:relative;display:flex;align-items:center}
+  .input-prefix,.input-suffix{position:absolute;font-size:13px;font-weight:500;color:var(--text3);pointer-events:none}
+  .input-prefix{left:12px}.input-suffix{right:12px}
+  input[type=number],select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border 0.15s;-moz-appearance:textfield;appearance:textfield}
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+  input[type=number]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,0.10)}
+  .has-prefix input{padding-left:28px}
+  .has-suffix input{padding-right:28px}
+  select{cursor:pointer}
+
+  /* SLIDER */
+  .slider-field{margin-bottom:1.25rem}
+  .slider-field label{display:flex;justify-content:space-between;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px}
+  .slider-val{color:var(--text);font-weight:600}
+  input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 1px var(--border)}
+
+  /* BUTTON */
+  .btn{width:100%;padding:12px;border:none;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:0.5rem}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#22c87a}
+  .btn-secondary{background:var(--surface2);color:var(--text2);margin-top:8px}
+  .btn-secondary:hover{background:var(--border)}
+
+  /* RESULTS */
+  .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+  .result-card{padding:14px 16px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}
+  .result-label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+  .result-value{font-size:1.25rem;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+  .result-card.highlight{background:var(--accent-l);border-color:rgba(52,211,153,0.25)}
+  .result-card.highlight .result-value{color:var(--accent)}
+  .result-card.highlight2{background:var(--blue-l);border-color:rgba(96,165,250,0.25)}
+  .result-card.highlight2 .result-value{color:var(--blue)}
+
+  /* CHART */
+  .chart-wrap{position:relative;width:100%;height:280px;margin:1rem 0}
+
+  /* TABLE */
+  .table-wrap{overflow-y:auto;max-height:320px;border:1px solid var(--border);border-radius:8px;margin-top:1rem}
+  .sched-table{width:100%;border-collapse:collapse;font-size:13px}
+  .sched-table th{position:sticky;top:0;background:var(--surface2);padding:9px 12px;text-align:right;font-weight:600;font-size:11px;letter-spacing:0.03em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+  .sched-table th:first-child{text-align:left}
+  .sched-table td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);color:var(--text);font-variant-numeric:tabular-nums}
+  .sched-table td:first-child{text-align:left;color:var(--text2);font-weight:500}
+  .sched-table tr:last-child td{border-bottom:none}
+  .sched-table tr:hover td{background:var(--surface2)}
+  .table-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer;padding:10px 0;border-top:1px solid var(--border);margin-top:1rem;user-select:none}
+  .table-toggle svg{transition:transform 0.2s}
+  .table-toggle.open svg{transform:rotate(180deg)}
+
+  /* LEGEND */
+  .chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:12px;color:var(--text2)}
+  .legend-item{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+  /* BADGE */
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-green{background:var(--accent-l);color:var(--accent)}
+  .badge-blue{background:var(--blue-l);color:var(--blue)}
+  .badge-amber{background:var(--amber-l);color:var(--amber)}
+
+  /* GOAL TRACKER */
+  .goal-progress{background:var(--surface2);border-radius:8px;height:10px;overflow:hidden;margin:10px 0}
+  .goal-progress-bar{height:100%;border-radius:8px;background:var(--accent);transition:width 0.4s}
+
+  /* TABS in card */
+  .inner-tabs{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--surface2);padding:4px;border-radius:8px}
+  .inner-tab{flex:1;padding:6px;border-radius:6px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s}
+  .inner-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+
+  /* SECTION HDR */
+  .section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .section-hdr{font-size:14px;font-weight:600;color:var(--text)}
+
+  /* SEPARATOR */
+  .sep{height:1px;background:var(--border);margin:1.25rem 0}
+
+  /* DISCLAIMER */
+  .disclaimer{font-size:11px;color:var(--text3);line-height:1.5;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+  /* INFLATION */
+  .inflation-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1rem 0}
+
+  /* NW TRACKER */
+  .nw-section{margin-bottom:1.5rem}
+  .nw-row{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  .nw-row input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px}
+  .nw-row input:focus{outline:none;border-color:var(--accent)}
+  .nw-row .label-col{width:160px;font-size:13px;color:var(--text2)}
+  .nw-total{font-size:1.5rem;font-weight:600;font-variant-numeric:tabular-nums}
+  .positive{color:var(--accent)}.negative{color:var(--red)}
+
+  /* STEPUP */
+  .stepup-highlight{background:var(--purple-l);border:1px solid rgba(91,59,158,0.2);border-radius:10px;padding:14px;margin:1rem 0;text-align:center}
+  .stepup-highlight .big{font-size:1.75rem;font-weight:700;color:var(--purple);font-variant-numeric:tabular-nums}
+  .stepup-highlight .small{font-size:12px;color:var(--text2);margin-top:4px}
+
+  /* HERO NUMBERS on dashboard */
+  .hero-number{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0}
+
+  /* responsive result grid */
+  @media(max-width:600px){.results-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:400px){.results-grid{grid-template-columns:1fr}}
+
+  /* THEME TRANSITION */
+  body, .card, .app-header, .nav-tab, input, select, .result-card, .sched-table th, .sched-table td, .table-wrap, .toast, .scenario-panel {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+
+  /* HEADER ACTIONS */
+  .header-actions{display:flex;align-items:center;gap:6px;padding:0.5rem 0;flex-shrink:0}
+  .theme-pill{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 6px;border-radius:999px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;white-space:nowrap;transition:all 0.18s;flex-shrink:0}
+  .theme-pill:hover{background:var(--surface2);border-color:var(--accent)}
+  .theme-pill .pill-icon{width:26px;height:26px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .theme-pill svg{width:13px;height:13px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .theme-pill .pill-label{color:var(--text2);font-weight:500;font-size:11px}
+  .theme-pill .pill-name{color:var(--text);font-weight:700}
+  [data-theme="dark"] .theme-pill .sun-icon{display:block}
+  [data-theme="dark"] .theme-pill .moon-icon{display:none}
+  .theme-pill .sun-icon{display:none}
+  .theme-pill .moon-icon{display:block}
+
+  /* SCENARIO PANEL */
+  .scenario-panel{margin-top:1.25rem;padding:14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}
+  .scenario-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .scenario-panel-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em}
+  .scenario-row{display:flex;gap:6px;margin-bottom:8px}
+  .scenario-row input{flex:1;padding:7px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--font);outline:none}
+  .scenario-row input:focus{border-color:var(--accent)}
+  .scenario-btn{padding:7px 12px;font-size:12px;font-weight:600;border-radius:6px;border:none;cursor:pointer;background:var(--accent);color:#fff;font-family:var(--font);white-space:nowrap;transition:opacity 0.15s}
+  .scenario-btn:hover{opacity:0.9}
+  .scenario-btn.btn-share{background:var(--blue)}
+  .scenario-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .scenario-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 4px 5px 10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;font-size:12px;color:var(--text);cursor:pointer;transition:all 0.15s}
+  .scenario-chip:hover{border-color:var(--accent);color:var(--accent)}
+  .scenario-chip .x{display:inline-flex;width:18px;height:18px;border-radius:50%;background:transparent;color:var(--text3);align-items:center;justify-content:center;font-size:14px;line-height:1;border:none;cursor:pointer}
+  .scenario-chip .x:hover{background:var(--red-l);color:var(--red)}
+  .scenario-empty{font-size:12px;color:var(--text3);font-style:italic;padding:4px 0}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--surface);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);opacity:0;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);z-index:1000;pointer-events:none;max-width:90%}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ANIMATED COUNTER FLASH */
+  .result-value.flash{animation:flash 0.5s ease}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:0.55}}
+
+  /* FIRE specific */
+  .fire-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1rem 0}
+  .fire-tier{padding:12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);text-align:center}
+  .fire-tier .tier-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text3);margin-bottom:4px}
+  .fire-tier .tier-val{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .fire-tier.lean .tier-val{color:var(--teal)}
+  .fire-tier.coast .tier-val{color:var(--blue)}
+  .fire-tier.fat .tier-val{color:var(--purple)}
+
+  /* Header responsive */
+  @media(max-width:700px){
+    .app-header{padding:0 1rem;gap:0.75rem}
+    .logo-text{display:none}
+    .scenario-row{flex-direction:column}
+    .scenario-row .scenario-btn{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18"><polyline points="1 13 5 8 9 11 13 5 17 1"/><polyline points="1 17 17 17"/></svg>
+    </div>
+    <div class="logo-text">FinCalc <span>Pro</span></div>
+  </div>
+  <nav id="mainNav">
+    <button class="nav-tab active" onclick="showPage('sip',this)">SIP</button>
+    <button class="nav-tab" onclick="showPage('emi',this)">EMI</button>
+    <button class="nav-tab" onclick="showPage('lumpsum',this)">Lumpsum</button>
+    <button class="nav-tab" onclick="showPage('stepup',this)">Step-up SIP</button>
+    <button class="nav-tab" onclick="showPage('swp',this)">SWP</button>
+    <button class="nav-tab" onclick="showPage('retirement',this)">Retirement</button>
+    <button class="nav-tab" onclick="showPage('fire',this)">FIRE</button>
+    <button class="nav-tab" onclick="showPage('goal',this)">Goal Planner</button>
+    <button class="nav-tab" onclick="showPage('inflation',this)">Inflation</button>
+    <button class="nav-tab" onclick="showPage('networth',this)">Net Worth</button>
+    <button class="nav-tab" onclick="showPage('emergency',this)">Emergency Fund</button>
+    <button class="nav-tab" onclick="showPage('prepay',this)">Loan Prepayment</button>
+    <button class="nav-tab" onclick="showPage('tax',this)">Tax Calculator</button>
+    <button class="nav-tab" onclick="showPage('rentbuy',this)">Buy vs Rent</button>
+  </nav>
+  <div class="header-actions">
+    <button class="theme-pill" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">
+      <div class="pill-icon">
+        <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;line-height:1.2">
+        <span class="pill-name">Pardeep Wadhwa</span>
+        <span class="pill-label" id="themeLabel">Switch to Light</span>
+      </div>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════════ SIP PAGE ═══════════════════════ -->
+<div class="page active" id="page-sip">
+  <div class="page-title">SIP Calculator</div>
+  <div class="page-subtitle">Systematic Investment Plan — plan your recurring investments</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Investment Details</div>
+        <div class="field">
+          <label>Initial Investment (one-time)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="sip-init" value="50000" min="0" oninput="calcSIP()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Recurring Investment Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="sip-amount" value="10000" min="100" oninput="calcSIP()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Investment Frequency</label>
+          <select id="sip-freq" onchange="calcSIP()">
+            <option value="12">Monthly</option>
+            <option value="4">Quarterly</option>
+            <option value="1">Yearly</option>
+          </select>
+        </div>
+        <div class="slider-field">
+          <label>Expected Annual Return <span class="slider-val" id="sip-rate-val">12%</span></label>
+          <input type="range" id="sip-rate" min="1" max="30" step="0.5" value="12" oninput="document.getElementById('sip-rate-val').textContent=this.value+'%';calcSIP()">
+        </div>
+        <div class="slider-field">
+          <label>Investment Tenure <span class="slider-val" id="sip-tenure-val">15 yrs</span></label>
+          <input type="range" id="sip-tenure" min="1" max="40" step="1" value="15" oninput="document.getElementById('sip-tenure-val').textContent=this.value+' yrs';calcSIP()">
+        </div>
+        <div class="slider-field">
+          <label>Inflation Rate (for real return) <span class="slider-val" id="sip-inf-val">6%</span></label>
+          <input type="range" id="sip-inf" min="0" max="15" step="0.5" value="6" oninput="document.getElementById('sip-inf-val').textContent=this.value+'%';calcSIP()">
+        </div>
+      </div>
+      <div id="sip-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid" id="sip-results">
+          <div class="result-card"><div class="result-label">Invested</div><div class="result-value" id="sr-invested">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Wealth Gained</div><div class="result-value" id="sr-gain">—</div></div>
+          <div class="result-card highlight"><div class="result-label">Maturity Value</div><div class="result-value" id="sr-maturity">—</div></div>
+        </div>
+        <div class="inflation-compare">
+          <div class="result-card" style="text-align:center"><div class="result-label">Real Maturity (today's ₹)</div><div class="result-value" id="sr-real" style="color:var(--text2)">—</div></div>
+          <div class="result-card" style="text-align:center"><div class="result-label">Real CAGR</div><div class="result-value" id="sr-real-cagr" style="color:var(--accent)">—</div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Returns (Growth)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399"></div>Invested Amount</div>
+        </div>
+        <div class="chart-wrap"><canvas id="sipChart" role="img" aria-label="SIP investment growth chart showing invested amount and wealth gained over years">Investment grows over time.</canvas></div>
+
+        <div class="sep"></div>
+        <div class="section-row" style="margin-bottom:0.5rem">
+          <div class="section-hdr">Returns vs Invested — Crossover</div>
+          <div id="sip-crossover-badge" style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--accent-l);color:var(--accent)">—</div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px">The point where cumulative returns exceed total invested amount</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Cumulative Returns</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F97316"></div>Total Invested</div>
+        </div>
+        <div class="chart-wrap"><canvas id="sipCrossChart" role="img" aria-label="SIP crossover chart showing when returns exceed invested amount">Crossover point chart.</canvas></div>
+
+        <div class="table-toggle" id="sip-toggle" onclick="toggleTable('sip')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Year-wise breakdown
+        </div>
+        <div id="sip-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Year</th><th>Invested (Cum.)</th><th>Returns (Cum.)</th><th>Portfolio Value</th></tr></thead>
+              <tbody id="sip-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ EMI PAGE ═══════════════════════ -->
+<div class="page" id="page-emi">
+  <div class="page-title">EMI Calculator</div>
+  <div class="page-subtitle">Calculate your loan EMI, interest breakdown and repayment schedule</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Loan Details</div>
+        <div class="field">
+          <label>Loan Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="emi-principal" value="2000000" min="1000" oninput="calcEMI()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Annual Interest Rate <span class="slider-val" id="emi-rate-val">8.5%</span></label>
+          <input type="range" id="emi-rate" min="1" max="30" step="0.1" value="8.5" oninput="document.getElementById('emi-rate-val').textContent=this.value+'%';calcEMI()">
+        </div>
+        <div class="slider-field">
+          <label>Loan Tenure <span class="slider-val" id="emi-tenure-val">20 yrs</span></label>
+          <input type="range" id="emi-tenure" min="1" max="30" step="1" value="20" oninput="document.getElementById('emi-tenure-val').textContent=this.value+' yrs';calcEMI()">
+        </div>
+        <div class="field">
+          <label>EMI Frequency</label>
+          <select id="emi-freq" onchange="calcEMI()">
+            <option value="12">Monthly</option>
+            <option value="4">Quarterly</option>
+          </select>
+        </div>
+      </div>
+      <div id="emi-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid">
+          <div class="result-card highlight"><div class="result-label" id="emi-freq-label">Monthly EMI</div><div class="result-value" id="er-emi">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Total Interest</div><div class="result-value" id="er-interest">—</div></div>
+          <div class="result-card"><div class="result-label">Total Repayment</div><div class="result-value" id="er-total">—</div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Principal</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F09595"></div>Interest</div>
+        </div>
+        <div class="chart-wrap"><canvas id="emiChart" role="img" aria-label="EMI amortization chart showing principal and interest breakdown over loan tenure">Principal vs interest over time.</canvas></div>
+        <div class="table-toggle" id="emi-toggle" onclick="toggleTable('emi')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Amortization schedule
+        </div>
+        <div id="emi-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Month</th><th>EMI</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+              <tbody id="emi-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ LUMPSUM PAGE ═══════════════════════ -->
+<div class="page" id="page-lumpsum">
+  <div class="page-title">Lumpsum Calculator</div>
+  <div class="page-subtitle">One-time investment growth projection with compounding</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Investment Details</div>
+        <div class="field">
+          <label>Investment Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ls-amount" value="500000" min="1000" oninput="calcLumpsum()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Expected Annual Return <span class="slider-val" id="ls-rate-val">12%</span></label>
+          <input type="range" id="ls-rate" min="1" max="30" step="0.5" value="12" oninput="document.getElementById('ls-rate-val').textContent=this.value+'%';calcLumpsum()">
+        </div>
+        <div class="slider-field">
+          <label>Investment Tenure <span class="slider-val" id="ls-tenure-val">10 yrs</span></label>
+          <input type="range" id="ls-tenure" min="1" max="40" step="1" value="10" oninput="document.getElementById('ls-tenure-val').textContent=this.value+' yrs';calcLumpsum()">
+        </div>
+        <div class="sep"></div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Compare with FD / Inflation</div>
+        <div class="slider-field">
+          <label>FD Rate <span class="slider-val" id="ls-fd-val">6.5%</span></label>
+          <input type="range" id="ls-fd" min="1" max="15" step="0.5" value="6.5" oninput="document.getElementById('ls-fd-val').textContent=this.value+'%';calcLumpsum()">
+        </div>
+        <div class="slider-field">
+          <label>Inflation Rate <span class="slider-val" id="ls-inf-val">6%</span></label>
+          <input type="range" id="ls-inf" min="1" max="15" step="0.5" value="6" oninput="document.getElementById('ls-inf-val').textContent=this.value+'%';calcLumpsum()">
+        </div>
+      </div>
+      <div id="lumpsum-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid">
+          <div class="result-card"><div class="result-label">Invested</div><div class="result-value" id="lr-invested">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Wealth Gained</div><div class="result-value" id="lr-gain">—</div></div>
+          <div class="result-card highlight"><div class="result-label">Maturity Value</div><div class="result-value" id="lr-maturity">—</div></div>
+        </div>
+        <div class="inflation-compare">
+          <div class="result-card" style="text-align:center"><div class="result-label">FD Value</div><div class="result-value" id="lr-fd" style="color:var(--amber)">—</div></div>
+          <div class="result-card" style="text-align:center"><div class="result-label">Real Value (adj.)</div><div class="result-value" id="lr-real" style="color:var(--text2)">—</div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Investment</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>FD</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#B8B3AC"></div>Inflation adj.</div>
+        </div>
+        <div class="chart-wrap"><canvas id="lsChart" role="img" aria-label="Lumpsum investment growth vs FD and inflation">Growth comparison over time.</canvas></div>
+        <div class="table-toggle" id="ls-toggle" onclick="toggleTable('ls')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Year-wise breakdown
+        </div>
+        <div id="ls-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Year</th><th>Investment Value</th><th>FD Value</th><th>Real Value</th></tr></thead>
+              <tbody id="ls-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ STEP-UP SIP PAGE ═══════════════════════ -->
+<div class="page" id="page-stepup">
+  <div class="page-title">Step-up SIP Calculator</div>
+  <div class="page-subtitle">Increase your SIP amount annually to accelerate wealth creation</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Investment Details</div>
+        <div class="field">
+          <label>Starting Monthly SIP</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="su-amount" value="10000" min="500" oninput="calcStepUp()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Annual Step-up % <span class="slider-val" id="su-step-val">10%</span></label>
+          <input type="range" id="su-step" min="1" max="50" step="1" value="10" oninput="document.getElementById('su-step-val').textContent=this.value+'%';calcStepUp()">
+        </div>
+        <div class="slider-field">
+          <label>Expected Annual Return <span class="slider-val" id="su-rate-val">12%</span></label>
+          <input type="range" id="su-rate" min="1" max="30" step="0.5" value="12" oninput="document.getElementById('su-rate-val').textContent=this.value+'%';calcStepUp()">
+        </div>
+        <div class="slider-field">
+          <label>Investment Tenure <span class="slider-val" id="su-tenure-val">20 yrs</span></label>
+          <input type="range" id="su-tenure" min="1" max="40" step="1" value="20" oninput="document.getElementById('su-tenure-val').textContent=this.value+' yrs';calcStepUp()">
+        </div>
+      </div>
+      <div id="stepup-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="stepup-highlight">
+          <div class="big" id="su-maturity">—</div>
+          <div class="small">Maturity Value</div>
+        </div>
+        <div class="results-grid" style="margin-top:1rem">
+          <div class="result-card"><div class="result-label">Total Invested</div><div class="result-value" id="su-invested">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Wealth Gained</div><div class="result-value" id="su-gain">—</div></div>
+          <div class="result-card"><div class="result-label">Flat SIP Value</div><div class="result-value" id="su-flat">—</div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#5B3B9E"></div>Step-up SIP</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#D4D0EE"></div>Flat SIP</div>
+        </div>
+        <div class="chart-wrap"><canvas id="suChart" role="img" aria-label="Step-up SIP vs flat SIP comparison chart">Step-up vs flat SIP growth.</canvas></div>
+        <div class="table-toggle" id="su-toggle" onclick="toggleTable('su')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Year-wise breakdown
+        </div>
+        <div id="su-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Year</th><th>SIP Amount</th><th>Invested (Cum.)</th><th>Step-up Value</th><th>Flat SIP Value</th></tr></thead>
+              <tbody id="su-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SWP PAGE ═══════════════════════ -->
+<div class="page" id="page-swp">
+  <div class="page-title">SWP Calculator</div>
+  <div class="page-subtitle">Systematic Withdrawal Plan — plan your retirement withdrawals</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Withdrawal Details</div>
+        <div class="field">
+          <label>Initial Corpus</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="swp-corpus" value="10000000" min="10000" oninput="calcSWP()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Monthly Withdrawal</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="swp-withdrawal" value="50000" min="1000" oninput="calcSWP()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Expected Annual Return <span class="slider-val" id="swp-rate-val">8%</span></label>
+          <input type="range" id="swp-rate" min="1" max="20" step="0.5" value="8" oninput="document.getElementById('swp-rate-val').textContent=this.value+'%';calcSWP()">
+        </div>
+        <div class="slider-field">
+          <label>Withdrawal Period <span class="slider-val" id="swp-tenure-val">20 yrs</span></label>
+          <input type="range" id="swp-tenure" min="1" max="40" step="1" value="20" oninput="document.getElementById('swp-tenure-val').textContent=this.value+' yrs';calcSWP()">
+        </div>
+      </div>
+      <div id="swp-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid">
+          <div class="result-card highlight"><div class="result-label">Total Withdrawn</div><div class="result-value" id="swp-total">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Final Balance</div><div class="result-value" id="swp-balance">—</div></div>
+          <div class="result-card"><div class="result-label">Returns Earned</div><div class="result-value" id="swp-returns">—</div></div>
+        </div>
+        <div id="swp-warning" style="display:none;background:var(--red-l);border:1px solid rgba(176,48,48,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:1rem">
+          ⚠️ Corpus will be depleted before the end of the selected period. Reduce withdrawal amount or increase return expectations.
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Corpus Balance</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#D4EDDF"></div>Cumulative Withdrawn</div>
+        </div>
+        <div class="chart-wrap"><canvas id="swpChart" role="img" aria-label="SWP corpus drawdown chart">Corpus balance over withdrawal period.</canvas></div>
+        <div class="table-toggle" id="swp-toggle" onclick="toggleTable('swp')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Year-wise schedule
+        </div>
+        <div id="swp-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Year</th><th>Withdrawn</th><th>Returns Earned</th><th>Balance</th></tr></thead>
+              <tbody id="swp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RETIREMENT PAGE ═══════════════════════ -->
+<div class="page" id="page-retirement">
+  <div class="page-title">Retirement Planner</div>
+  <div class="page-subtitle">Plan the corpus you need and how to build it</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Your Details</div>
+        <div class="field">
+          <label>Current Age</label>
+          <div class="input-wrap">
+            <input type="number" id="ret-age" value="35" min="18" max="70" oninput="calcRetirement()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Retirement Age</label>
+          <div class="input-wrap">
+            <input type="number" id="ret-retire-age" value="60" min="40" max="80" oninput="calcRetirement()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Life Expectancy</label>
+          <div class="input-wrap">
+            <input type="number" id="ret-life" value="85" min="60" max="100" oninput="calcRetirement()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Current Monthly Expenses</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ret-expenses" value="50000" min="5000" oninput="calcRetirement()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Inflation Rate <span class="slider-val" id="ret-inf-val">6%</span></label>
+          <input type="range" id="ret-inf" min="1" max="15" step="0.5" value="6" oninput="document.getElementById('ret-inf-val').textContent=this.value+'%';calcRetirement()">
+        </div>
+        <div class="slider-field">
+          <label>Pre-retirement Returns <span class="slider-val" id="ret-pre-val">12%</span></label>
+          <input type="range" id="ret-pre" min="1" max="25" step="0.5" value="12" oninput="document.getElementById('ret-pre-val').textContent=this.value+'%';calcRetirement()">
+        </div>
+        <div class="slider-field">
+          <label>Post-retirement Returns <span class="slider-val" id="ret-post-val">7%</span></label>
+          <input type="range" id="ret-post" min="1" max="15" step="0.5" value="7" oninput="document.getElementById('ret-post-val').textContent=this.value+'%';calcRetirement()">
+        </div>
+        <div class="field">
+          <label>Current Savings / Existing Corpus</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ret-savings" value="500000" min="0" oninput="calcRetirement()">
+          </div>
+        </div>
+      </div>
+      <div id="retirement-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Retirement Plan</div>
+        <div style="margin-bottom:1.5rem">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Corpus Required at Retirement</div>
+          <div class="hero-number" id="ret-corpus" style="color:var(--accent)">—</div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem">
+          <div class="result-card"><div class="result-label">Years to Retire</div><div class="result-value" id="ret-years">—</div></div>
+          <div class="result-card"><div class="result-label">Monthly Expense (at Retire)</div><div class="result-value" id="ret-monthly-exp">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Monthly SIP Needed</div><div class="result-value" id="ret-sip">—</div></div>
+          <div class="result-card"><div class="result-label">Lumpsum Needed Now</div><div class="result-value" id="ret-lump">—</div></div>
+        </div>
+        <div class="chart-wrap" style="height:220px"><canvas id="retChart" role="img" aria-label="Retirement corpus building and withdrawal chart">Corpus growth and drawdown.</canvas></div>
+        <div class="disclaimer">All figures are projections. Actual inflation, returns, and life expectancy may vary. This calculator assumes inflation-adjusted expenses in retirement equal current expenses.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ GOAL PAGE ═══════════════════════ -->
+<div class="page" id="page-goal">
+  <div class="page-title">Goal-Based Planner</div>
+  <div class="page-subtitle">How much do you need to invest to reach your goal?</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Goal Details</div>
+        <div class="field">
+          <label>Goal Name</label>
+          <input type="text" id="goal-name" value="Dream Home" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;outline:none" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div class="field">
+          <label>Target Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="goal-target" value="10000000" min="10000" oninput="calcGoal()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Time to Goal <span class="slider-val" id="goal-tenure-val">10 yrs</span></label>
+          <input type="range" id="goal-tenure" min="1" max="40" step="1" value="10" oninput="document.getElementById('goal-tenure-val').textContent=this.value+' yrs';calcGoal()">
+        </div>
+        <div class="slider-field">
+          <label>Expected Annual Return <span class="slider-val" id="goal-rate-val">12%</span></label>
+          <input type="range" id="goal-rate" min="1" max="30" step="0.5" value="12" oninput="document.getElementById('goal-rate-val').textContent=this.value+'%';calcGoal()">
+        </div>
+        <div class="slider-field">
+          <label>Inflation on Goal <span class="slider-val" id="goal-inf-val">5%</span></label>
+          <input type="range" id="goal-inf" min="0" max="15" step="0.5" value="5" oninput="document.getElementById('goal-inf-val').textContent=this.value+'%';calcGoal()">
+        </div>
+        <div class="field">
+          <label>Existing Savings for Goal</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="goal-savings" value="0" min="0" oninput="calcGoal()">
+          </div>
+        </div>
+      </div>
+      <div id="goal-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Goal Plan</div>
+        <div style="margin-bottom:1rem">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Inflation-Adjusted Target</div>
+          <div class="hero-number" id="goal-real-target" style="color:var(--text)">—</div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr">
+          <div class="result-card highlight"><div class="result-label">Monthly SIP Required</div><div class="result-value" id="goal-sip">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Lumpsum Required Now</div><div class="result-value" id="goal-lump">—</div></div>
+        </div>
+        <div style="margin:1rem 0">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+            <span style="color:var(--text2)" id="goal-progress-label">Progress</span>
+            <span style="color:var(--text);font-weight:600" id="goal-progress-pct">0%</span>
+          </div>
+          <div class="goal-progress"><div class="goal-progress-bar" id="goal-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:4px">
+            <span>₹0</span><span id="goal-bar-target">—</span>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="goalChart" role="img" aria-label="Goal investment growth chart">Goal accumulation over time.</canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ INFLATION PAGE ═══════════════════════ -->
+<div class="page" id="page-inflation">
+  <div class="page-title">Inflation Impact Calculator</div>
+  <div class="page-subtitle">Understand how inflation erodes purchasing power over time</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Parameters</div>
+        <div class="field">
+          <label>Current Value / Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="inf-amount" value="100000" min="100" oninput="calcInflation()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Inflation Rate <span class="slider-val" id="inf-rate-val">6%</span></label>
+          <input type="range" id="inf-rate" min="1" max="20" step="0.5" value="6" oninput="document.getElementById('inf-rate-val').textContent=this.value+'%';calcInflation()">
+        </div>
+        <div class="slider-field">
+          <label>Time Period <span class="slider-val" id="inf-tenure-val">20 yrs</span></label>
+          <input type="range" id="inf-tenure" min="1" max="50" step="1" value="20" oninput="document.getElementById('inf-tenure-val').textContent=this.value+' yrs';calcInflation()">
+        </div>
+        <div class="sep"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Investment to beat inflation</div>
+        <div class="slider-field">
+          <label>Expected Return <span class="slider-val" id="inf-inv-val">10%</span></label>
+          <input type="range" id="inf-inv" min="1" max="30" step="0.5" value="10" oninput="document.getElementById('inf-inv-val').textContent=this.value+'%';calcInflation()">
+        </div>
+      </div>
+      <div id="inflation-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid">
+          <div class="result-card"><div class="result-label">Today's Value</div><div class="result-value" id="inf-today">—</div></div>
+          <div class="result-card" style="background:var(--red-l);border-color:rgba(176,48,48,0.15)"><div class="result-label">Future Purchasing Power</div><div class="result-value" id="inf-future" style="color:var(--red)">—</div></div>
+          <div class="result-card highlight"><div class="result-label">Investment Grows To</div><div class="result-value" id="inf-inv-value">—</div></div>
+        </div>
+        <div class="result-card" style="margin-bottom:1rem">
+          <div class="result-label">Real Return after Inflation</div>
+          <div class="result-value" id="inf-real-return" style="color:var(--accent)">—</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Investment Growth</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F87171"></div>Purchasing Power</div>
+        </div>
+        <div class="chart-wrap"><canvas id="infChart" role="img" aria-label="Inflation impact vs investment growth chart">Inflation erosion vs investment growth.</canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ NET WORTH PAGE ═══════════════════════ -->
+<div class="page" id="page-networth">
+  <div class="page-title">Net Worth Tracker</div>
+  <div class="page-subtitle">Track your assets and liabilities to know your true financial position</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Assets</div>
+        <div class="nw-section">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Liquid Assets</div>
+          <div class="nw-row"><div class="label-col">Cash & Bank Balance</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-cash" value="200000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">Stocks / Equity</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-stocks" value="500000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">Mutual Funds</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-mf" value="800000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">FDs / PPF / Bonds</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-fd" value="300000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">Gold / Jewellery</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-gold" value="200000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+        </div>
+        <div class="nw-section">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Fixed Assets</div>
+          <div class="nw-row"><div class="label-col">Real Estate (Market)</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-re" value="5000000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">Vehicles</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-vehicle" value="600000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+          <div class="nw-row"><div class="label-col">PF / Gratuity</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-pf" value="400000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1.5rem">
+        <div class="card-title">Liabilities</div>
+        <div class="nw-row"><div class="label-col">Home Loan Outstanding</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-hl" value="2000000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+        <div class="nw-row"><div class="label-col">Car / Other Loans</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-loan" value="300000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+        <div class="nw-row"><div class="label-col">Credit Card Dues</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-cc" value="50000" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+        <div class="nw-row"><div class="label-col">Other Liabilities</div><div class="input-wrap has-prefix" style="flex:1"><span class="input-prefix">₹</span><input type="number" id="nw-other" value="0" min="0" oninput="calcNetWorth()" style="flex:1;padding:8px 8px 8px 28px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px"></div></div>
+      </div>
+      <div id="networth-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Financial Position</div>
+        <div style="text-align:center;padding:1.5rem 0 1rem">
+          <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);margin-bottom:8px">Net Worth</div>
+          <div class="nw-total positive" id="nw-total">—</div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1.25rem">
+          <div class="result-card highlight"><div class="result-label">Total Assets</div><div class="result-value" id="nw-assets">—</div></div>
+          <div class="result-card" style="background:var(--red-l);border-color:rgba(176,48,48,0.15)"><div class="result-label">Total Liabilities</div><div class="result-value" id="nw-liabilities" style="color:var(--red)">—</div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Liquid Assets</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Fixed Assets</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F87171"></div>Liabilities</div>
+        </div>
+        <div class="chart-wrap" style="height:260px"><canvas id="nwChart" role="img" aria-label="Net worth breakdown donut chart">Asset and liability breakdown.</canvas></div>
+        <div style="margin-top:1rem;padding:14px;border-radius:10px;background:var(--surface2)">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">Financial Health Ratios</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Debt-to-Asset Ratio</span><span id="nw-dta" style="font-weight:600">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Liquid Asset %</span><span id="nw-liq" style="font-weight:600">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--text2)">Net Worth / Gross Assets</span><span id="nw-nwa" style="font-weight:600">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ FIRE PAGE ═══════════════════════ -->
+<div class="page" id="page-fire">
+  <div class="page-title">FIRE Calculator</div>
+  <div class="page-subtitle">Financial Independence, Retire Early — find your FIRE number across Lean, Coast and Fat tiers</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Your Profile</div>
+        <div class="field">
+          <label>Current Age</label>
+          <div class="input-wrap"><input type="number" id="fire-age" value="30" min="18" max="70" oninput="calcFire()"></div>
+        </div>
+        <div class="field">
+          <label>Current Annual Expenses</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="fire-expenses" value="600000" min="10000" oninput="calcFire()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Current Annual Savings</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="fire-savings" value="400000" min="0" oninput="calcFire()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Current Portfolio Value</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="fire-portfolio" value="500000" min="0" oninput="calcFire()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Safe Withdrawal Rate <span class="slider-val" id="fire-swr-val">4%</span></label>
+          <input type="range" id="fire-swr" min="2" max="8" step="0.1" value="4" oninput="document.getElementById('fire-swr-val').textContent=this.value+'%';calcFire()">
+        </div>
+        <div class="slider-field">
+          <label>Expected Return <span class="slider-val" id="fire-ret-val">11%</span></label>
+          <input type="range" id="fire-ret" min="3" max="25" step="0.5" value="11" oninput="document.getElementById('fire-ret-val').textContent=this.value+'%';calcFire()">
+        </div>
+        <div class="slider-field">
+          <label>Inflation <span class="slider-val" id="fire-inf-val">6%</span></label>
+          <input type="range" id="fire-inf" min="0" max="15" step="0.5" value="6" oninput="document.getElementById('fire-inf-val').textContent=this.value+'%';calcFire()">
+        </div>
+      </div>
+      <div id="fire-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Your FIRE Numbers</div>
+        <div style="margin-bottom:1rem">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">FIRE Number (Regular)</div>
+          <div class="hero-number" id="fire-number" style="color:var(--accent)">—</div>
+          <div style="font-size:12px;color:var(--text2)" id="fire-multiple">— × annual expenses</div>
+        </div>
+        <div class="fire-tiers">
+          <div class="fire-tier lean">
+            <div class="tier-label">Lean FIRE</div>
+            <div class="tier-val" id="fire-lean">—</div>
+          </div>
+          <div class="fire-tier coast">
+            <div class="tier-label">Coast FIRE</div>
+            <div class="tier-val" id="fire-coast">—</div>
+          </div>
+          <div class="fire-tier fat">
+            <div class="tier-label">Fat FIRE</div>
+            <div class="tier-val" id="fire-fat">—</div>
+          </div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem">
+          <div class="result-card highlight"><div class="result-label">Years to FIRE</div><div class="result-value" id="fire-years">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">FIRE Age</div><div class="result-value" id="fire-age-out">—</div></div>
+        </div>
+        <div style="margin:1rem 0">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+            <span style="color:var(--text2)">Progress to FIRE</span>
+            <span style="color:var(--text);font-weight:600" id="fire-progress-pct">0%</span>
+          </div>
+          <div class="goal-progress"><div class="goal-progress-bar" id="fire-bar" style="width:0%"></div></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Portfolio</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F97316"></div>FIRE Target (real)</div>
+        </div>
+        <div class="chart-wrap"><canvas id="fireChart" role="img" aria-label="FIRE portfolio growth vs target chart">Portfolio growth vs FIRE target.</canvas></div>
+        <div class="disclaimer">FIRE Number = Annual Expenses ÷ SWR. Lean ≈ 70% of expenses; Fat ≈ 150%. Coast FIRE = the amount that, left untouched at expected return, grows to your FIRE number by age 60.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ EMERGENCY FUND PAGE ═══════════════════════ -->
+<div class="page" id="page-emergency">
+  <div class="page-title">Emergency Fund Calculator</div>
+  <div class="page-subtitle">Calculate how much you need as a safety net based on your situation</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Your Situation</div>
+        <div class="field">
+          <label>Monthly Living Expenses</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ef-expenses" value="60000" min="1000" oninput="calcEmergency()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Monthly EMIs / Fixed Obligations</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ef-emi" value="15000" min="0" oninput="calcEmergency()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Number of Dependents</label>
+          <div class="input-wrap"><input type="number" id="ef-dependents" value="2" min="0" max="10" oninput="calcEmergency()"></div>
+        </div>
+        <div class="field">
+          <label>Job Stability</label>
+          <select id="ef-stability" onchange="calcEmergency()">
+            <option value="high">High (govt, stable salaried)</option>
+            <option value="med" selected>Medium (private salaried)</option>
+            <option value="low">Low (contract, gig, freelance)</option>
+            <option value="biz">Self-employed / Business</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Number of Income Earners</label>
+          <select id="ef-earners" onchange="calcEmergency()">
+            <option value="1">Single income</option>
+            <option value="2" selected>Dual income</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Current Emergency Savings</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="ef-current" value="100000" min="0" oninput="calcEmergency()">
+          </div>
+        </div>
+      </div>
+      <div id="ef-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Recommended Fund</div>
+        <div style="margin-bottom:1rem">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Recommended Emergency Corpus</div>
+          <div class="hero-number" id="ef-target" style="color:var(--accent)">—</div>
+          <div style="font-size:12px;color:var(--text2)" id="ef-months">— months of expenses</div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem">
+          <div class="result-card highlight"><div class="result-label">Monthly Outflow</div><div class="result-value" id="ef-outflow">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Shortfall / Surplus</div><div class="result-value" id="ef-gap">—</div></div>
+        </div>
+        <div style="margin:1rem 0">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+            <span style="color:var(--text2)">Funded</span>
+            <span style="color:var(--text);font-weight:600" id="ef-pct">0%</span>
+          </div>
+          <div class="goal-progress"><div class="goal-progress-bar" id="ef-bar" style="width:0%"></div></div>
+        </div>
+        <div style="margin-top:1rem;padding:14px;border-radius:10px;background:var(--surface2)">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Allocation Recommendation</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Savings Account (instant)</span><span id="ef-sa" style="font-weight:600">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Liquid Mutual Fund (T+1)</span><span id="ef-lf" style="font-weight:600">—</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Short-term FD (3–6 mo)</span><span id="ef-st" style="font-weight:600">—</span></div>
+          </div>
+        </div>
+        <div class="disclaimer" id="ef-note">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ LOAN PREPAYMENT PAGE ═══════════════════════ -->
+<div class="page" id="page-prepay">
+  <div class="page-title">Loan Prepayment Calculator</div>
+  <div class="page-subtitle">See how much interest and time you save by prepaying — and compare lump-sum vs increased EMI</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Loan Details</div>
+        <div class="field">
+          <label>Outstanding Loan Amount</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="pp-principal" value="3000000" min="10000" oninput="calcPrepay()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Interest Rate <span class="slider-val" id="pp-rate-val">9%</span></label>
+          <input type="range" id="pp-rate" min="1" max="25" step="0.1" value="9" oninput="document.getElementById('pp-rate-val').textContent=this.value+'%';calcPrepay()">
+        </div>
+        <div class="slider-field">
+          <label>Remaining Tenure <span class="slider-val" id="pp-tenure-val">20 yrs</span></label>
+          <input type="range" id="pp-tenure" min="1" max="30" step="1" value="20" oninput="document.getElementById('pp-tenure-val').textContent=this.value+' yrs';calcPrepay()">
+        </div>
+        <div class="sep"></div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Prepayment Strategy</div>
+        <div class="field">
+          <label>One-time Lumpsum Prepayment</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="pp-lump" value="500000" min="0" oninput="calcPrepay()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Extra Monthly Payment</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="pp-extra" value="5000" min="0" oninput="calcPrepay()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Prepayment Effect</label>
+          <select id="pp-mode" onchange="calcPrepay()">
+            <option value="tenure" selected>Reduce Tenure (keep EMI same)</option>
+            <option value="emi">Reduce EMI (keep tenure same)</option>
+          </select>
+        </div>
+      </div>
+      <div id="pp-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Savings Summary</div>
+        <div class="results-grid">
+          <div class="result-card highlight"><div class="result-label">Original EMI</div><div class="result-value" id="pp-orig-emi">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">New EMI</div><div class="result-value" id="pp-new-emi">—</div></div>
+          <div class="result-card"><div class="result-label">Interest Saved</div><div class="result-value" id="pp-int-saved" style="color:var(--accent)">—</div></div>
+        </div>
+        <div class="results-grid" style="grid-template-columns:1fr 1fr;margin-top:0.75rem">
+          <div class="result-card"><div class="result-label">Original Tenure</div><div class="result-value" id="pp-orig-tenure">—</div></div>
+          <div class="result-card"><div class="result-label">New Tenure</div><div class="result-value" id="pp-new-tenure" style="color:var(--accent)">—</div></div>
+        </div>
+        <div class="chart-legend" style="margin-top:1rem">
+          <div class="legend-item"><div class="legend-dot" style="background:#F87171"></div>Without Prepayment</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>With Prepayment</div>
+        </div>
+        <div class="chart-wrap"><canvas id="ppChart" role="img" aria-label="Loan balance with and without prepayment over time">Loan balance over time.</canvas></div>
+        <div class="disclaimer">Calculations assume lumpsum is applied immediately and the extra monthly payment continues until loan closure. Some lenders charge prepayment penalties on fixed-rate loans — check your loan agreement.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TAX CALCULATOR PAGE ═══════════════════════ -->
+<div class="page" id="page-tax">
+  <div class="page-title">Income Tax Calculator</div>
+  <div class="page-subtitle">Compare Old vs New Regime — FY 2024-25 (AY 2025-26)</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Income Details</div>
+        <div class="field">
+          <label>Gross Annual Salary / Income</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-income" value="1200000" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Other Income (FD Interest, Rent, etc.)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-other" value="0" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">Old Regime Deductions</div>
+        <div class="field">
+          <label>HRA Exempt / Rent Paid (annual)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-hra" value="120000" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Section 80C (PF, ELSS, LIC, PPF, etc.)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-80c" value="150000" min="0" max="150000" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Section 80D — Health Insurance Premium</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-80d" value="25000" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Home Loan Interest (Sec 24b)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-homeloan" value="0" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>NPS Employer Contribution (80CCD(2))</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-nps" value="0" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Other Deductions (LTA, donations, etc.)</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="tax-other-ded" value="0" min="0" oninput="calcTax()">
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="field">
+          <label>Age Group</label>
+          <select id="tax-age" onchange="calcTax()">
+            <option value="general">Below 60 (General)</option>
+            <option value="senior">60–79 (Senior Citizen)</option>
+            <option value="super">80+ (Super Senior)</option>
+          </select>
+        </div>
+      </div>
+      <div id="tax-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Tax Comparison</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem">
+          <div style="background:var(--blue-l);border:1px solid rgba(96,165,250,0.25);border-radius:10px;padding:16px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--blue);margin-bottom:8px">Old Regime</div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:2px">Taxable Income</div>
+            <div class="result-value" id="tax-old-taxable" style="font-size:1rem;color:var(--text)">—</div>
+            <div style="font-size:11px;color:var(--text2);margin:10px 0 2px">Tax + Cess</div>
+            <div class="result-value" id="tax-old-tax" style="font-size:1.4rem;color:var(--blue)">—</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px">Effective Rate: <strong id="tax-old-rate" style="color:var(--blue)">—</strong></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">Monthly Take-home: <strong id="tax-old-inhand" style="color:var(--text)">—</strong></div>
+          </div>
+          <div style="background:var(--accent-l);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:8px">New Regime</div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:2px">Taxable Income</div>
+            <div class="result-value" id="tax-new-taxable" style="font-size:1rem;color:var(--text)">—</div>
+            <div style="font-size:11px;color:var(--text2);margin:10px 0 2px">Tax + Cess</div>
+            <div class="result-value" id="tax-new-tax" style="font-size:1.4rem;color:var(--accent)">—</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px">Effective Rate: <strong id="tax-new-rate" style="color:var(--accent)">—</strong></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">Monthly Take-home: <strong id="tax-new-inhand" style="color:var(--text)">—</strong></div>
+          </div>
+        </div>
+        <div id="tax-verdict" style="text-align:center;padding:12px;border-radius:10px;font-size:14px;font-weight:600;margin-bottom:1.25rem"></div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Old Regime</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>New Regime</div>
+        </div>
+        <div class="chart-wrap"><canvas id="taxChart" role="img" aria-label="Tax comparison old vs new regime">Tax comparison chart.</canvas></div>
+        <div class="sep"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Old Regime — Slab Breakdown</div>
+        <div class="table-wrap" style="max-height:220px">
+          <table class="sched-table">
+            <thead><tr><th>Slab</th><th>Rate</th><th>Income in Slab</th><th>Tax</th></tr></thead>
+            <tbody id="tax-slab-tbody"></tbody>
+          </table>
+        </div>
+        <div class="disclaimer">Includes 4% Health & Education Cess. Standard deduction ₹50,000 applied in both regimes. 87A rebate applied where applicable. NPS employer deduction under 80CCD(2) is available in both regimes.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ BUY VS RENT PAGE ═══════════════════════ -->
+<div class="page" id="page-rentbuy">
+  <div class="page-title">Buy vs Rent Analysis</div>
+  <div class="page-subtitle">Home loan break-even & long-term wealth comparison — Indian context</div>
+  <div class="calc-grid">
+    <div>
+      <div class="card">
+        <div class="card-title">Property & Loan Details</div>
+        <div class="field">
+          <label>Property Price</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="rb-price" value="8000000" min="100000" oninput="calcRentBuy()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Down Payment</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="rb-down" value="2000000" min="0" oninput="calcRentBuy()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Home Loan Interest Rate <span class="slider-val" id="rb-lrate-val">8.5%</span></label>
+          <input type="range" id="rb-lrate" min="5" max="15" step="0.1" value="8.5" oninput="document.getElementById('rb-lrate-val').textContent=this.value+'%';calcRentBuy()">
+        </div>
+        <div class="slider-field">
+          <label>Loan Tenure <span class="slider-val" id="rb-ltenure-val">20 yrs</span></label>
+          <input type="range" id="rb-ltenure" min="5" max="30" step="1" value="20" oninput="document.getElementById('rb-ltenure-val').textContent=this.value+' yrs';calcRentBuy()">
+        </div>
+        <div class="sep"></div>
+        <div class="card-title" style="margin-top:0">Rental Details</div>
+        <div class="field">
+          <label>Current Monthly Rent</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="rb-rent" value="25000" min="1000" oninput="calcRentBuy()">
+          </div>
+        </div>
+        <div class="slider-field">
+          <label>Annual Rent Increase <span class="slider-val" id="rb-rinc-val">6%</span></label>
+          <input type="range" id="rb-rinc" min="0" max="15" step="0.5" value="6" oninput="document.getElementById('rb-rinc-val').textContent=this.value+'%';calcRentBuy()">
+        </div>
+        <div class="sep"></div>
+        <div class="card-title" style="margin-top:0">Assumptions</div>
+        <div class="slider-field">
+          <label>Property Appreciation (p.a.) <span class="slider-val" id="rb-appr-val">7%</span></label>
+          <input type="range" id="rb-appr" min="0" max="20" step="0.5" value="7" oninput="document.getElementById('rb-appr-val').textContent=this.value+'%';calcRentBuy()">
+        </div>
+        <div class="slider-field">
+          <label>Investment Return (if renting) <span class="slider-val" id="rb-inv-val">12%</span></label>
+          <input type="range" id="rb-inv" min="1" max="25" step="0.5" value="12" oninput="document.getElementById('rb-inv-val').textContent=this.value+'%';calcRentBuy()">
+        </div>
+        <div class="field">
+          <label>Annual Maintenance (% of property value)</label>
+          <div class="input-wrap has-suffix">
+            <input type="number" id="rb-maint" value="0.5" min="0" max="5" step="0.1" oninput="calcRentBuy()">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+      </div>
+      <div id="rentbuy-scenario-mount"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Results</div>
+        <div class="results-grid">
+          <div class="result-card highlight"><div class="result-label">Monthly EMI</div><div class="result-value" id="rb-emi">—</div></div>
+          <div class="result-card"><div class="result-label">Current Rent</div><div class="result-value" id="rb-rent-show">—</div></div>
+          <div class="result-card highlight2"><div class="result-label">Break-even Year</div><div class="result-value" id="rb-breakeven">—</div></div>
+        </div>
+        <div id="rb-verdict" style="text-align:center;padding:12px;border-radius:10px;font-size:13px;font-weight:500;margin:1rem 0"></div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#34D399;border-radius:2px"></div>Buy — Net Worth</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#60A5FA"></div>Rent — Net Worth</div>
+        </div>
+        <div class="chart-wrap"><canvas id="rbChart" role="img" aria-label="Buy vs rent net worth over time">Buy vs rent comparison.</canvas></div>
+        <div class="table-toggle" id="rb-toggle" onclick="toggleTable('rb')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l5 5 5-5"/></svg>
+          Year-wise breakdown
+        </div>
+        <div id="rb-table-wrap" style="display:none">
+          <div class="table-wrap">
+            <table class="sched-table">
+              <thead><tr><th>Year</th><th>Property Value</th><th>Loan Balance</th><th>Buy Net Worth</th><th>Rent Net Worth</th></tr></thead>
+              <tbody id="rb-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="disclaimer">Buy net worth = property value − outstanding loan. Rent net worth = down payment + (EMI−rent) invested at assumed return. Buying costs include stamp duty (~6%), registration (~1%) and maintenance. This is a simplified model — actual outcomes depend on location, negotiation, and market conditions.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── UTILITIES ────────────────────────────────────────────────
+const fmt = n => {
+  if(n === undefined || n === null || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  if(abs >= 1e7) return (n<0?'-':'') + '₹' + (abs/1e7).toFixed(2) + ' Cr';
+  if(abs >= 1e5) return (n<0?'-':'') + '₹' + (abs/1e5).toFixed(2) + ' L';
+  return (n<0?'-':'') + '₹' + Math.round(abs).toLocaleString('en-IN');
+};
+const fmtShort = n => {
+  const abs = Math.abs(n);
+  if(abs >= 1e7) return (n<0?'-':'') + '₹' + (abs/1e7).toFixed(1) + 'Cr';
+  if(abs >= 1e5) return (n<0?'-':'') + '₹' + (abs/1e5).toFixed(1) + 'L';
+  return (n<0?'-':'') + '₹' + Math.round(abs).toLocaleString('en-IN');
+};
+const v = id => parseFloat(document.getElementById(id).value) || 0;
+
+// Animated counters: parse numeric value out of formatted strings; if old & new are both numeric, tween. Otherwise just set.
+const _animState = {};
+function set(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  // Only animate if it looks like a currency / numeric label
+  const isResult = el.classList.contains('result-value') || el.classList.contains('hero-number') || el.classList.contains('tier-val') || el.classList.contains('nw-total');
+  const newNum = (typeof val === 'string') ? parseRupee(val) : (typeof val === 'number' ? val : NaN);
+  const oldNum = _animState[id];
+  if(isResult && !isNaN(newNum) && typeof oldNum === 'number' && Math.abs(newNum - oldNum) > 0.01){
+    animateNumber(el, oldNum, newNum, val);
+    _animState[id] = newNum;
+  } else {
+    el.textContent = val;
+    if(!isNaN(newNum)) _animState[id] = newNum;
+  }
+}
+function parseRupee(s){
+  if(typeof s !== 'string') return NaN;
+  const trimmed = s.trim();
+  if(trimmed === '—' || trimmed === '') return NaN;
+  // Handle "₹1.23 Cr" / "₹4.56 L" / "₹1,23,456"
+  const isCr = /Cr/i.test(trimmed);
+  const isL  = /L\b/i.test(trimmed);
+  const sign = trimmed.startsWith('-') ? -1 : 1;
+  const num = parseFloat(trimmed.replace(/[₹,\s]/g, '').replace(/Cr|L/i,''));
+  if(isNaN(num)) return NaN;
+  let val = num;
+  if(isCr) val *= 1e7;
+  else if(isL) val *= 1e5;
+  return sign * val;
+}
+function animateNumber(el, from, to, finalStr){
+  const dur = 380;
+  const t0 = performance.now();
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'), 500);
+  // Detect what format the final string is in so the tween uses the same format
+  const format = makeFormatter(finalStr, to);
+  function tick(now){
+    const t = Math.min((now - t0) / dur, 1);
+    // ease-out cubic
+    const e = 1 - Math.pow(1 - t, 3);
+    const cur = from + (to - from) * e;
+    el.textContent = (t < 1) ? format(cur) : finalStr;
+    if(t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+function makeFormatter(finalStr, finalNum){
+  if(typeof finalStr !== 'string') return n => String(n);
+  if(/Cr/i.test(finalStr)) return n => (n<0?'-':'')+'₹'+(Math.abs(n)/1e7).toFixed(2)+' Cr';
+  if(/L\b/i.test(finalStr)) return n => (n<0?'-':'')+'₹'+(Math.abs(n)/1e5).toFixed(2)+' L';
+  if(/%/.test(finalStr)) return n => n.toFixed(1)+'%';
+  if(/yrs|months/i.test(finalStr)){
+    const unit = finalStr.match(/[a-z]+/i)[0];
+    return n => Math.round(n)+' '+unit;
+  }
+  if(/₹/.test(finalStr)) return n => (n<0?'-':'')+'₹'+Math.round(Math.abs(n)).toLocaleString('en-IN');
+  return n => Math.round(n).toLocaleString('en-IN');
+}
+
+// Toast
+function toast(msg, ms=2000){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+// Chart registry
+const charts = {};
+function chartTheme(){
+  const dark = document.documentElement.dataset.theme === 'dark';
+  return {
+    grid: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    tick: dark ? '#8A8A9A' : '#5B6478',
+    border: dark ? '#141414' : '#FFFFFF'
+  };
+}
+function makeChart(id, type, data, options, pluginsArr){
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const th = chartTheme();
+  // Inject theme-aware colors into options
+  const opts = JSON.parse(JSON.stringify(options || {}));
+  if(opts.scales){
+    if(opts.scales.x){ opts.scales.x.grid = {...(opts.scales.x.grid||{}), color: th.grid}; opts.scales.x.ticks = {...(opts.scales.x.ticks||{}), color: th.tick}; }
+    if(opts.scales.y){ opts.scales.y.grid = {...(opts.scales.y.grid||{}), color: th.grid}; opts.scales.y.ticks = {...(opts.scales.y.ticks||{}), color: th.tick}; }
+  }
+  // For doughnut/pie border
+  if(data.datasets){
+    data.datasets.forEach(ds => { if(ds.borderColor === '#fff' || ds.borderColor === '#FFFFFF') ds.borderColor = th.border; });
+  }
+  charts[id] = new Chart(ctx, {type, data, options: {responsive:true, maintainAspectRatio:false, ...opts}, plugins: pluginsArr || []});
+  return charts[id];
+}
+
+// ─── THEME ──────────────────────────────────────────────────
+function applyTheme(theme){
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem('fincalc.theme', theme); } catch(e){}
+  const lbl = document.getElementById('themeLabel');
+  if(lbl) lbl.textContent = theme === 'dark' ? 'Switch to Light' : 'Switch to Dark';
+  // Fully recalculate the active page to redraw charts with new theme colors
+  const activePage = document.querySelector('.page.active');
+  if(activePage){
+    const id = activePage.id.replace('page-','');
+    const fnMap = {sip:calcSIP,emi:calcEMI,lumpsum:calcLumpsum,stepup:calcStepUp,swp:calcSWP,retirement:calcRetirement,fire:calcFire,goal:calcGoal,inflation:calcInflation,networth:calcNetWorth,emergency:calcEmergency,prepay:calcPrepay,tax:calcTax,rentbuy:calcRentBuy};
+    if(fnMap[id]) fnMap[id]();
+  }
+}
+function toggleTheme(){
+  const cur = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(cur);
+}
+function initTheme(){
+  let saved = null;
+  try { saved = localStorage.getItem('fincalc.theme'); } catch(e){}
+  if(saved === 'dark' || saved === 'light') applyTheme(saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+  else applyTheme('dark');
+}
+
+// ─── SCENARIOS (localStorage) + SHARE URL ───────────────────
+// Map calculator key → list of input ids (URL/scenario fields)
+const CALC_FIELDS = {
+  sip:        ['sip-init','sip-amount','sip-freq','sip-rate','sip-tenure','sip-inf'],
+  emi:        ['emi-principal','emi-rate','emi-tenure','emi-freq'],
+  lumpsum:    ['ls-amount','ls-rate','ls-tenure','ls-fd','ls-inf'],
+  stepup:     ['su-amount','su-step','su-rate','su-tenure'],
+  swp:        ['swp-corpus','swp-withdrawal','swp-rate','swp-tenure'],
+  retirement: ['ret-age','ret-retire-age','ret-life','ret-expenses','ret-inf','ret-pre','ret-post','ret-savings'],
+  fire:       ['fire-age','fire-expenses','fire-savings','fire-portfolio','fire-swr','fire-ret','fire-inf'],
+  goal:       ['goal-name','goal-target','goal-tenure','goal-rate','goal-inf','goal-savings'],
+  inflation:  ['inf-amount','inf-rate','inf-tenure','inf-inv'],
+  networth:   ['nw-cash','nw-stocks','nw-mf','nw-fd','nw-gold','nw-re','nw-vehicle','nw-pf','nw-hl','nw-loan','nw-cc','nw-other'],
+  emergency:  ['ef-expenses','ef-emi','ef-dependents','ef-stability','ef-earners','ef-current'],
+  prepay:     ['pp-principal','pp-rate','pp-tenure','pp-lump','pp-extra','pp-mode'],
+  tax:        ['tax-income','tax-other','tax-hra','tax-80c','tax-80d','tax-homeloan','tax-nps','tax-other-ded','tax-age'],
+  rentbuy:    ['rb-price','rb-down','rb-lrate','rb-ltenure','rb-rent','rb-rinc','rb-appr','rb-inv','rb-maint'],
+};
+// Calculator → which calc function + slider value labels to refresh
+const CALC_RUNNER = {
+  sip:'calcSIP', emi:'calcEMI', lumpsum:'calcLumpsum', stepup:'calcStepUp', swp:'calcSWP',
+  retirement:'calcRetirement', fire:'calcFire', goal:'calcGoal', inflation:'calcInflation',
+  networth:'calcNetWorth', emergency:'calcEmergency', prepay:'calcPrepay',
+  tax:'calcTax', rentbuy:'calcRentBuy'
+};
+// Map slider id → value-display id + suffix (so we can refresh labels after loading)
+const SLIDER_LABELS = {
+  'sip-rate':['sip-rate-val','%'], 'sip-tenure':['sip-tenure-val',' yrs'], 'sip-inf':['sip-inf-val','%'],
+  'emi-rate':['emi-rate-val','%'], 'emi-tenure':['emi-tenure-val',' yrs'],
+  'ls-rate':['ls-rate-val','%'], 'ls-tenure':['ls-tenure-val',' yrs'], 'ls-fd':['ls-fd-val','%'], 'ls-inf':['ls-inf-val','%'],
+  'su-step':['su-step-val','%'], 'su-rate':['su-rate-val','%'], 'su-tenure':['su-tenure-val',' yrs'],
+  'swp-rate':['swp-rate-val','%'], 'swp-tenure':['swp-tenure-val',' yrs'],
+  'ret-inf':['ret-inf-val','%'], 'ret-pre':['ret-pre-val','%'], 'ret-post':['ret-post-val','%'],
+  'fire-swr':['fire-swr-val','%'], 'fire-ret':['fire-ret-val','%'], 'fire-inf':['fire-inf-val','%'],
+  'goal-tenure':['goal-tenure-val',' yrs'], 'goal-rate':['goal-rate-val','%'], 'goal-inf':['goal-inf-val','%'],
+  'inf-rate':['inf-rate-val','%'], 'inf-tenure':['inf-tenure-val',' yrs'], 'inf-inv':['inf-inv-val','%'],
+  'pp-rate':['pp-rate-val','%'], 'pp-tenure':['pp-tenure-val',' yrs'],
+  'rb-lrate':['rb-lrate-val','%'], 'rb-ltenure':['rb-ltenure-val',' yrs'],
+  'rb-rinc':['rb-rinc-val','%'], 'rb-appr':['rb-appr-val','%'], 'rb-inv':['rb-inv-val','%'],
+};
+function refreshSliderLabel(id){
+  const map = SLIDER_LABELS[id];
+  if(!map) return;
+  const el = document.getElementById(id);
+  const lbl = document.getElementById(map[0]);
+  if(el && lbl) lbl.textContent = el.value + map[1];
+}
+function readCalcState(key){
+  const ids = CALC_FIELDS[key] || [];
+  const state = {};
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) state[id] = el.value;
+  });
+  return state;
+}
+function applyCalcState(key, state){
+  const ids = CALC_FIELDS[key] || [];
+  ids.forEach(id => {
+    if(state[id] === undefined) return;
+    const el = document.getElementById(id);
+    if(el){ el.value = state[id]; refreshSliderLabel(id); }
+  });
+  const fn = window[CALC_RUNNER[key]];
+  if(typeof fn === 'function') fn();
+}
+
+// localStorage scenarios
+function lsKey(calc){ return 'fincalc.scenarios.' + calc; }
+function getScenarios(calc){
+  try { return JSON.parse(localStorage.getItem(lsKey(calc)) || '{}'); } catch(e){ return {}; }
+}
+function saveScenarios(calc, obj){
+  try { localStorage.setItem(lsKey(calc), JSON.stringify(obj)); } catch(e){ toast('Storage unavailable'); }
+}
+function saveScenario(calc){
+  const inp = document.getElementById(calc+'-scenario-name');
+  const name = (inp.value || '').trim();
+  if(!name){ toast('Please enter a scenario name'); inp.focus(); return; }
+  const scenarios = getScenarios(calc);
+  scenarios[name] = { state: readCalcState(calc), ts: Date.now() };
+  saveScenarios(calc, scenarios);
+  inp.value = '';
+  renderScenarios(calc);
+  toast('Saved "' + name + '"');
+}
+function loadScenario(calc, name){
+  const scenarios = getScenarios(calc);
+  if(!scenarios[name]) return;
+  applyCalcState(calc, scenarios[name].state);
+  toast('Loaded "' + name + '"');
+}
+function deleteScenario(calc, name, ev){
+  ev.stopPropagation();
+  if(!confirm('Delete scenario "' + name + '"?')) return;
+  const scenarios = getScenarios(calc);
+  delete scenarios[name];
+  saveScenarios(calc, scenarios);
+  renderScenarios(calc);
+}
+function renderScenarios(calc){
+  const list = document.getElementById(calc+'-scenario-list');
+  if(!list) return;
+  const scenarios = getScenarios(calc);
+  const names = Object.keys(scenarios).sort((a,b)=> (scenarios[b].ts||0) - (scenarios[a].ts||0));
+  if(names.length === 0){
+    list.innerHTML = '<div class="scenario-empty">No saved scenarios yet</div>';
+    return;
+  }
+  list.innerHTML = names.map(n => {
+    const safe = n.replace(/"/g,'&quot;');
+    return `<span class="scenario-chip" onclick="loadScenario('${calc}','${safe}')">${escapeHtml(n)}<button class="x" onclick="deleteScenario('${calc}','${safe}',event)" aria-label="Delete scenario">×</button></span>`;
+  }).join('');
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+// Build scenario UI panel and mount into each calculator
+function mountScenarioPanel(calc){
+  const mount = document.getElementById(calc+'-scenario-mount');
+  if(!mount) return;
+  mount.innerHTML = `
+    <div class="scenario-panel">
+      <div class="scenario-panel-header">
+        <div class="scenario-panel-title">Saved Scenarios</div>
+      </div>
+      <div class="scenario-row">
+        <input type="text" id="${calc}-scenario-name" placeholder="Scenario name (e.g. Aggressive)" maxlength="40" onkeydown="if(event.key==='Enter')saveScenario('${calc}')">
+        <button class="scenario-btn" onclick="saveScenario('${calc}')">Save</button>
+        <button class="scenario-btn btn-share" onclick="shareScenario('${calc}')" title="Copy shareable link">Share</button>
+      </div>
+      <div class="scenario-list" id="${calc}-scenario-list"></div>
+    </div>`;
+  renderScenarios(calc);
+}
+
+// Share URL
+function shareScenario(calc){
+  const state = readCalcState(calc);
+  const params = new URLSearchParams();
+  params.set('calc', calc);
+  Object.entries(state).forEach(([k,v]) => params.set(k, v));
+  const url = location.origin + location.pathname + '?' + params.toString();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(
+      () => toast('Link copied to clipboard'),
+      () => fallbackCopy(url)
+    );
+  } else fallbackCopy(url);
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('Link copied'); } catch(e){ toast('Copy failed — link: ' + text.slice(0,40) + '…', 4000); }
+  document.body.removeChild(ta);
+}
+function loadFromURL(){
+  const params = new URLSearchParams(location.search);
+  const calc = params.get('calc');
+  if(!calc || !CALC_FIELDS[calc]) return null;
+  const state = {};
+  CALC_FIELDS[calc].forEach(id => { if(params.has(id)) state[id] = params.get(id); });
+  if(Object.keys(state).length === 0) return null;
+  return { calc, state };
+}
+
+// Page nav
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Table toggles
+function toggleTable(id){
+  const wrap = document.getElementById(id+'-table-wrap');
+  const tog = document.getElementById(id+'-toggle');
+  const open = wrap.style.display === 'block';
+  wrap.style.display = open ? 'none' : 'block';
+  tog.classList.toggle('open', !open);
+  const svg = tog.querySelector('svg');
+  if(!open) svg.style.transform='rotate(180deg)'; else svg.style.transform='';
+}
+
+// ─── SIP CALCULATOR ──────────────────────────────────────────
+function calcSIP(){
+  const init = v('sip-init');
+  const amt = v('sip-amount');
+  const freq = parseInt(document.getElementById('sip-freq').value);
+  const rate = v('sip-rate') / 100;
+  const years = v('sip-tenure');
+  const inf = v('sip-inf') / 100;
+  const r = rate / freq;
+  const n = freq * years;
+  // Future value of lumpsum init
+  const fvInit = init * Math.pow(1 + rate, years);
+  // FV of annuity
+  const fvSIP = r > 0 ? amt * ((Math.pow(1+r, n) - 1) / r) * (1 + r) : amt * n;
+  const maturity = fvInit + fvSIP;
+  const invested = init + amt * n;
+  const gain = maturity - invested;
+  // Inflation adjusted
+  const realMaturity = maturity / Math.pow(1+inf, years);
+  // Real CAGR (inflation-adjusted, computed on the whole portfolio outcome vs total invested)
+  // Use realRate approximation since contributions are spread over time
+  const realRateAnn = ((1+rate)/(1+inf) - 1) * 100;
+  set('sr-invested', fmt(invested));
+  set('sr-gain', fmt(gain));
+  set('sr-maturity', fmt(maturity));
+  set('sr-real', fmt(realMaturity));
+  set('sr-real-cagr', realRateAnn.toFixed(2)+'%');
+  // Year-wise data + crossover
+  const labels = [], invArr = [], valArr = [], retArr = [];
+  const tbody = document.getElementById('sip-tbody');
+  tbody.innerHTML = '';
+  let crossoverYear = null;
+  for(let y = 1; y <= years; y++){
+    const fvi = init * Math.pow(1+rate, y);
+    const periods = freq * y;
+    const fvs = r > 0 ? amt * ((Math.pow(1+r,periods)-1)/r)*(1+r) : amt*periods;
+    const val = fvi + fvs;
+    const inv = init + amt * periods;
+    const ret = val - inv;
+    labels.push('Y'+y);
+    invArr.push(Math.round(inv));
+    valArr.push(Math.round(val));
+    retArr.push(Math.round(ret));
+    if(!crossoverYear && ret >= inv) crossoverYear = y;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>Year ${y}</td><td>${fmt(inv)}</td><td>${fmt(ret)}</td><td>${fmt(val)}</td>`;
+    tbody.appendChild(tr);
+  }
+  // Crossover badge
+  const badge = document.getElementById('sip-crossover-badge');
+  if(crossoverYear){
+    badge.textContent = 'Crosses over at Year ' + crossoverYear;
+    badge.style.background = 'var(--accent-l)'; badge.style.color = 'var(--accent)';
+  } else {
+    badge.textContent = 'No crossover in tenure';
+    badge.style.background = 'var(--amber-l)'; badge.style.color = 'var(--amber)';
+  }
+  makeChart('sipChart','bar',{
+    labels,
+    datasets:[
+      {label:'Returns (Growth)',data:valArr.map((v,i)=>v-invArr[i]),backgroundColor:'#34D399',borderRadius:3,stack:'a'},
+      {label:'Invested Amount',data:invArr,backgroundColor:'#D4EDDF',borderRadius:3,stack:'a'}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtShort(c.raw)}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+
+  // Crossover chart — line chart, returns vs invested, with annotation at crossing point
+  const crossPlugin = {
+    id:'crossoverLine',
+    afterDraw(chart){
+      if(!crossoverYear) return;
+      const idx = crossoverYear - 1;
+      const meta = chart.getDatasetMeta(0);
+      if(!meta.data[idx]) return;
+      const x = meta.data[idx].x;
+      const {ctx, chartArea:{top,bottom}} = chart;
+      ctx.save();
+      ctx.setLineDash([5,4]);
+      ctx.strokeStyle = 'rgba(249,115,22,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#F97316';
+      ctx.font = '600 11px DM Sans, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✕ Y'+crossoverYear, x, top - 6);
+      ctx.restore();
+    }
+  };
+  makeChart('sipCrossChart','line',{
+    labels,
+    datasets:[
+      {label:'Cumulative Returns',data:retArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.4,pointRadius:0,borderWidth:2},
+      {label:'Total Invested',data:invArr,borderColor:'#F97316',backgroundColor:'rgba(249,115,22,0.08)',fill:true,tension:0.4,pointRadius:0,borderWidth:2,borderDash:[5,3]}
+    ]
+  },{
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtShort(c.raw)}},
+      crossoverLine: crossPlugin
+    },
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  }, [crossPlugin]);
+}
+
+// ─── EMI CALCULATOR ──────────────────────────────────────────
+function calcEMI(){
+  const P = v('emi-principal');
+  const annRate = v('emi-rate') / 100;
+  const years = v('emi-tenure');
+  const freq = parseInt(document.getElementById('emi-freq').value);
+  const r = annRate / freq;
+  const n = freq * years;
+  const emi = r > 0 ? P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1) : P/n;
+  const total = emi * n;
+  const totalInt = total - P;
+  const lbl = freq === 12 ? 'Monthly EMI' : 'Quarterly EMI';
+  document.getElementById('emi-freq-label').textContent = lbl;
+  set('er-emi', fmt(emi));
+  set('er-interest', fmt(totalInt));
+  set('er-total', fmt(total));
+  // Monthly amortization (Indian bank context — monthly reducing balance)
+  const labels=[], prinArr=[], intArr=[];
+  const tbody = document.getElementById('emi-tbody');
+  tbody.innerHTML='';
+  let bal = P;
+  const totalMonths = years * 12;
+  const rMonthly = annRate / 12;
+  const emiMonthly = rMonthly > 0 ? P * rMonthly * Math.pow(1+rMonthly,totalMonths) / (Math.pow(1+rMonthly,totalMonths)-1) : P/totalMonths;
+  // Rebuild yearly chart arrays using monthly emi
+  const yPrinArr=[], yIntArr=[], yLabels=[];
+  let balM = P;
+  for(let m=1; m<=totalMonths; m++){
+    if(balM<=0) break;
+    const interest = Math.round(balM * rMonthly * 100)/100; // Indian banks round to paise
+    const principal = Math.min(emiMonthly - interest, balM);
+    balM -= principal;
+    if(balM < 0.5) balM = 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>Month ${m}</td><td>${fmt(emiMonthly)}</td><td>${fmt(principal)}</td><td>${fmt(interest)}</td><td>${fmt(Math.max(balM,0))}</td>`;
+    tbody.appendChild(tr);
+    // Aggregate yearly for chart
+    const y = Math.ceil(m/12);
+    if(!yPrinArr[y-1]){yPrinArr[y-1]=0;yIntArr[y-1]=0;yLabels[y-1]='Y'+y;}
+    yPrinArr[y-1]+=principal; yIntArr[y-1]+=interest;
+  }
+  yLabels.forEach((l,i)=>{labels.push(l);prinArr.push(Math.round(yPrinArr[i]));intArr.push(Math.round(yIntArr[i]));});
+  makeChart('emiChart','bar',{
+    labels,
+    datasets:[
+      {label:'Principal',data:prinArr,backgroundColor:'#60A5FA',borderRadius:3},
+      {label:'Interest',data:intArr,backgroundColor:'#F09595',borderRadius:3}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},y:{stacked:true,ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── LUMPSUM CALCULATOR ──────────────────────────────────────
+function calcLumpsum(){
+  const amt = v('ls-amount');
+  const rate = v('ls-rate')/100;
+  const years = v('ls-tenure');
+  const fd = v('ls-fd')/100;
+  const inf = v('ls-inf')/100;
+  const maturity = amt * Math.pow(1+rate, years);
+  const fdVal = amt * Math.pow(1+fd, years);
+  const realVal = amt * Math.pow(1+inf, years);
+  const realReturn = ((1+rate)/(1+inf)-1)*100;
+  set('lr-invested', fmt(amt));
+  set('lr-gain', fmt(maturity-amt));
+  set('lr-maturity', fmt(maturity));
+  set('lr-fd', fmt(fdVal));
+  set('lr-real', fmt(realVal));
+  const labels=[],invArr=[],fdArr=[],realArr=[];
+  const tbody=document.getElementById('ls-tbody');
+  tbody.innerHTML='';
+  for(let y=1;y<=years;y++){
+    const val=amt*Math.pow(1+rate,y);
+    const fv=amt*Math.pow(1+fd,y);
+    const rv=amt*Math.pow(1+inf,y);
+    labels.push('Y'+y); invArr.push(Math.round(val)); fdArr.push(Math.round(fv)); realArr.push(Math.round(rv));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>Year ${y}</td><td>${fmt(val)}</td><td>${fmt(fv)}</td><td>${fmt(rv)}</td>`;
+    tbody.appendChild(tr);
+  }
+  makeChart('lsChart','line',{
+    labels,
+    datasets:[
+      {label:'Investment',data:invArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.3,pointRadius:2},
+      {label:'FD',data:fdArr,borderColor:'#BA7517',backgroundColor:'rgba(186,117,23,0.05)',fill:false,tension:0.3,pointRadius:2,borderDash:[4,3]},
+      {label:'Inflation adj.',data:realArr,borderColor:'#B8B3AC',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:2,borderDash:[2,3]}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── STEP-UP SIP ─────────────────────────────────────────────
+function calcStepUp(){
+  const startAmt = v('su-amount');
+  const step = v('su-step')/100;
+  const rate = v('su-rate')/100;
+  const years = v('su-tenure');
+  const r = rate/12;
+  let corpus=0, invested=0, flatCorpus=0;
+  const labels=[],corpArr=[],flatArr=[],investArr=[];
+  const tbody=document.getElementById('su-tbody');
+  tbody.innerHTML='';
+  let curSIP=startAmt;
+  for(let y=1;y<=years;y++){
+    if(y>1) curSIP = startAmt * Math.pow(1+step, y-1);
+    const periods=12;
+    for(let m=0;m<periods;m++){
+      corpus = corpus*(1+r) + curSIP;
+      flatCorpus = flatCorpus*(1+r) + startAmt;
+      invested += curSIP;
+    }
+    labels.push('Y'+y);
+    corpArr.push(Math.round(corpus));
+    flatArr.push(Math.round(flatCorpus));
+    investArr.push(Math.round(invested));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>Year ${y}</td><td>${fmt(curSIP)}/mo</td><td>${fmt(invested)}</td><td>${fmt(corpus)}</td><td>${fmt(flatCorpus)}</td>`;
+    tbody.appendChild(tr);
+  }
+  set('su-maturity', fmt(corpus));
+  set('su-invested', fmt(invested));
+  set('su-gain', fmt(corpus-invested));
+  set('su-flat', fmt(flatCorpus));
+  makeChart('suChart','bar',{
+    labels,
+    datasets:[
+      {label:'Step-up SIP',data:corpArr,backgroundColor:'#5B3B9E',borderRadius:3},
+      {label:'Flat SIP',data:flatArr,backgroundColor:'#D4D0EE',borderRadius:3}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── SWP CALCULATOR ──────────────────────────────────────────
+function calcSWP(){
+  const corpus0 = v('swp-corpus');
+  const monthly = v('swp-withdrawal');
+  const rate = v('swp-rate')/100;
+  const years = v('swp-tenure');
+  const r = rate/12;
+  let bal = corpus0, totalW=0, totalR=0, depleted=false;
+  const labels=[],balArr=[],wArr=[];
+  const tbody=document.getElementById('swp-tbody');
+  tbody.innerHTML='';
+  for(let y=1;y<=years;y++){
+    let yW=0, yR=0;
+    for(let m=0;m<12;m++){
+      if(bal<=0){depleted=true;break;}
+      const ret=bal*r; yR+=ret; bal+=ret;
+      const w=Math.min(monthly,bal); yW+=w; bal-=w; totalW+=w; totalR+=ret;
+    }
+    labels.push('Y'+y); balArr.push(Math.round(Math.max(bal,0))); wArr.push(Math.round(totalW));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>Year ${y}</td><td>${fmt(yW)}</td><td>${fmt(yR)}</td><td>${fmt(Math.max(bal,0))}</td>`;
+    tbody.appendChild(tr);
+    if(depleted)break;
+  }
+  document.getElementById('swp-warning').style.display = depleted ? 'block' : 'none';
+  set('swp-total', fmt(totalW));
+  set('swp-balance', fmt(Math.max(bal,0)));
+  set('swp-returns', fmt(totalR));
+  makeChart('swpChart','line',{
+    labels,
+    datasets:[
+      {label:'Corpus Balance',data:balArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.3,pointRadius:2},
+      {label:'Cumulative Withdrawn',data:wArr,borderColor:'#D4EDDF',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:2,borderDash:[4,3]}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── RETIREMENT PLANNER ──────────────────────────────────────
+function calcRetirement(){
+  const age = v('ret-age');
+  const retAge = v('ret-retire-age');
+  const life = v('ret-life');
+  const expenses = v('ret-expenses');
+  const inf = v('ret-inf')/100;
+  const pre = v('ret-pre')/100;
+  const post = v('ret-post')/100;
+  const savings = v('ret-savings');
+  const yToRetire = Math.max(retAge - age, 0);
+  const retYears = Math.max(life - retAge, 0);
+  const expAtRetire = expenses * Math.pow(1+inf, yToRetire);
+  const annualExpAtRetire = expAtRetire * 12;
+  // Corpus needed at retirement (PV of annuity growing with inflation)
+  const realRate = (1+post)/(1+inf)-1;
+  let corpus;
+  if(Math.abs(realRate) < 0.0001) corpus = annualExpAtRetire * retYears;
+  else corpus = annualExpAtRetire * (1 - Math.pow(1+realRate,-retYears)) / realRate;
+  const savingsGrown = savings * Math.pow(1+pre, yToRetire);
+  const remaining = Math.max(corpus - savingsGrown, 0);
+  // SIP needed
+  const r = pre/12;
+  const n = yToRetire*12;
+  let sipNeeded;
+  if(r>0 && n>0) sipNeeded = remaining * r / ((Math.pow(1+r,n)-1)*(1+r));
+  else sipNeeded = n>0 ? remaining/n : remaining;
+  const lumpNeeded = remaining > 0 ? remaining/Math.pow(1+pre,yToRetire) : 0;
+  set('ret-corpus', fmt(corpus));
+  set('ret-years', yToRetire + ' yrs');
+  set('ret-monthly-exp', fmt(expAtRetire));
+  set('ret-sip', fmt(sipNeeded));
+  set('ret-lump', fmt(lumpNeeded));
+  // Chart: accumulation + drawdown
+  const labels=[],corpArr=[];
+  let c=savings;
+  for(let y=0;y<yToRetire;y++){ c=c*(1+pre)+(sipNeeded*12*(1+r)); labels.push('Y'+(y+1)); corpArr.push(Math.round(c)); }
+  let draw=corpus;
+  for(let y=0;y<retYears;y++){
+    draw=draw*(1+post)-annualExpAtRetire*Math.pow(1+inf,y);
+    labels.push('R'+(y+1)); corpArr.push(Math.max(Math.round(draw),0));
+    if(draw<=0)break;
+  }
+  makeChart('retChart','line',{
+    labels,
+    datasets:[{label:'Corpus',data:corpArr,borderColor:'#34D399',backgroundColor:'rgba(27,107,69,0.1)',fill:true,tension:0.3,pointRadius:0}]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10},maxTicksLimit:10}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── GOAL PLANNER ────────────────────────────────────────────
+function calcGoal(){
+  const target = v('goal-target');
+  const years = v('goal-tenure');
+  const rate = v('goal-rate')/100;
+  const inf = v('goal-inf')/100;
+  const savings = v('goal-savings');
+  const realTarget = target * Math.pow(1+inf, years);
+  const savingsGrown = savings * Math.pow(1+rate, years);
+  const needed = Math.max(realTarget - savingsGrown, 0);
+  const r = rate/12;
+  const n = years*12;
+  let sip;
+  if(r>0 && n>0) sip = needed * r / ((Math.pow(1+r,n)-1)*(1+r));
+  else sip = n>0 ? needed/n : needed;
+  const lump = needed > 0 ? needed/Math.pow(1+rate,years) : 0;
+  const pct = Math.min(savingsGrown/realTarget*100, 100);
+  set('goal-real-target', fmt(realTarget));
+  set('goal-sip', fmt(sip));
+  set('goal-lump', fmt(lump));
+  set('goal-progress-pct', pct.toFixed(1)+'%');
+  set('goal-bar-target', fmt(realTarget));
+  document.getElementById('goal-bar').style.width = pct+'%';
+  const labels=[],tArr=[],cArr=[];
+  let c=savings;
+  for(let y=1;y<=years;y++){
+    const yt=target*Math.pow(1+inf,y);
+    const yc=c*(1+rate)+sip*12*(1+r);
+    c=savings*Math.pow(1+rate,y)+sip*12*(1+r)*((Math.pow(1+r,y*12)-1)/r);
+    labels.push('Y'+y); tArr.push(Math.round(yt)); cArr.push(Math.round(Math.min(c,yt*1.05)));
+  }
+  makeChart('goalChart','line',{
+    labels,
+    datasets:[
+      {label:'Your Corpus',data:cArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.3,pointRadius:2},
+      {label:'Goal Target',data:tArr,borderColor:'#F97316',backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:0,borderDash:[5,4]}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── INFLATION CALC ──────────────────────────────────────────
+function calcInflation(){
+  const amt = v('inf-amount');
+  const inf = v('inf-rate')/100;
+  const years = v('inf-tenure');
+  const inv = v('inf-inv')/100;
+  const futurePrice = amt * Math.pow(1+inf, years);
+  const purchPower = amt / Math.pow(1+inf, years);
+  const invValue = amt * Math.pow(1+inv, years);
+  const realReturn = ((1+inv)/(1+inf)-1)*100;
+  set('inf-today', fmt(amt));
+  set('inf-future', fmt(futurePrice));
+  set('inf-inv-value', fmt(invValue));
+  document.getElementById('inf-real-return').textContent = realReturn.toFixed(2) + '% real return';
+  const labels=[],ppArr=[],ivArr=[];
+  for(let y=1;y<=years;y++){
+    labels.push('Y'+y);
+    ppArr.push(Math.round(amt/Math.pow(1+inf,y)));
+    ivArr.push(Math.round(amt*Math.pow(1+inv,y)));
+  }
+  makeChart('infChart','line',{
+    labels,
+    datasets:[
+      {label:'Investment Growth',data:ivArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.3,pointRadius:0},
+      {label:'Purchasing Power',data:ppArr,borderColor:'#F87171',backgroundColor:'rgba(176,48,48,0.05)',fill:true,tension:0.3,pointRadius:0}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── NET WORTH ───────────────────────────────────────────────
+function calcNetWorth(){
+  const liquid = v('nw-cash')+v('nw-stocks')+v('nw-mf')+v('nw-fd')+v('nw-gold');
+  const fixed = v('nw-re')+v('nw-vehicle')+v('nw-pf');
+  const totalAssets = liquid + fixed;
+  const totalLiab = v('nw-hl')+v('nw-loan')+v('nw-cc')+v('nw-other');
+  const nw = totalAssets - totalLiab;
+  const nwEl = document.getElementById('nw-total');
+  nwEl.textContent = fmt(nw);
+  nwEl.className = 'nw-total ' + (nw >= 0 ? 'positive' : 'negative');
+  set('nw-assets', fmt(totalAssets));
+  set('nw-liabilities', fmt(totalLiab));
+  const dta = totalAssets > 0 ? (totalLiab/totalAssets*100).toFixed(1)+'%' : '0%';
+  const liqPct = totalAssets > 0 ? (liquid/totalAssets*100).toFixed(1)+'%' : '0%';
+  const nwa = totalAssets > 0 ? (nw/totalAssets*100).toFixed(1)+'%' : '0%';
+  set('nw-dta', dta); set('nw-liq', liqPct); set('nw-nwa', nwa);
+  makeChart('nwChart','doughnut',{
+    labels:['Liquid Assets','Fixed Assets','Liabilities'],
+    datasets:[{data:[Math.max(liquid,0),Math.max(fixed,0),Math.max(totalLiab,0)],backgroundColor:['#34D399','#60A5FA','#F87171'],borderWidth:2,borderColor:'#1A1D24',hoverOffset:4}]
+  },{
+    cutout:'60%',
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmtShort(c.raw)}}}
+  });
+}
+
+// ─── FIRE CALCULATOR ─────────────────────────────────────────
+function calcFire(){
+  const age = v('fire-age');
+  const expenses = v('fire-expenses');          // current annual
+  const savings = v('fire-savings');             // annual savings
+  const portfolio = v('fire-portfolio');
+  const swr = v('fire-swr') / 100;
+  const ret = v('fire-ret') / 100;
+  const inf = v('fire-inf') / 100;
+
+  // FIRE numbers based on TODAY'S expenses (so amounts are in today's rupees)
+  const fireNumber = swr > 0 ? expenses / swr : 0;
+  const leanFire   = (expenses * 0.7) / (swr > 0 ? swr : 0.04);
+  const fatFire    = (expenses * 1.5) / (swr > 0 ? swr : 0.04);
+  // Coast FIRE: amount that, growing at real return until age 60, equals fire number
+  const realRate = (1+ret)/(1+inf) - 1;
+  const coastYears = Math.max(60 - age, 1);
+  const coastFire  = realRate > -0.99 ? fireNumber / Math.pow(1+realRate, coastYears) : fireNumber;
+  const multiple = swr > 0 ? (1/swr) : 0;
+
+  // Years to FIRE: portfolio + annual savings grow at REAL return, target = fireNumber
+  // Solve: P*(1+rr)^n + S*((1+rr)^n - 1)/rr = T
+  // Iterate year by year for clarity & to allow plotting
+  let yearsToFire = 0;
+  const labels=[], portArr=[], targetArr=[];
+  let p = portfolio;
+  const maxYears = 80;
+  let reached = false;
+  for(let y=1; y<=maxYears; y++){
+    // grow portfolio in real terms, add annual savings (assumed to grow with inflation, so constant in real terms)
+    p = p * (1 + realRate) + savings;
+    labels.push('Y'+y); portArr.push(Math.round(p)); targetArr.push(Math.round(fireNumber));
+    if(!reached && p >= fireNumber){ yearsToFire = y; reached = true; }
+    if(reached && y >= Math.max(yearsToFire+2, 10)) break; // a bit of trail past goal
+  }
+  if(!reached) yearsToFire = labels.length; // didn't reach within window
+  const progressPct = Math.min((portfolio / fireNumber) * 100, 100);
+
+  set('fire-number', fmt(fireNumber));
+  set('fire-multiple', multiple.toFixed(0) + ' × annual expenses');
+  set('fire-lean', fmt(leanFire));
+  set('fire-coast', fmt(coastFire));
+  set('fire-fat', fmt(fatFire));
+  set('fire-years', reached ? yearsToFire + ' yrs' : '40+ yrs');
+  set('fire-age-out', reached ? (age + yearsToFire) : '—');
+  set('fire-progress-pct', progressPct.toFixed(1) + '%');
+  document.getElementById('fire-bar').style.width = progressPct + '%';
+
+  makeChart('fireChart','line',{
+    labels,
+    datasets:[
+      {label:'Portfolio',data:portArr,borderColor:'#34D399',backgroundColor:'rgba(52,211,153,0.10)',fill:true,tension:0.3,pointRadius:0},
+      {label:'FIRE Target',data:targetArr,borderColor:'#F97316',backgroundColor:'transparent',fill:false,tension:0,pointRadius:0,borderDash:[6,4]}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:12}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── EMERGENCY FUND CALCULATOR ───────────────────────────────
+function calcEmergency(){
+  const expenses = v('ef-expenses');
+  const emi = v('ef-emi');
+  const dep = v('ef-dependents');
+  const stab = document.getElementById('ef-stability').value;
+  const earners = parseInt(document.getElementById('ef-earners').value);
+  const current = v('ef-current');
+
+  // Base months by job stability
+  const baseMonths = {high: 3, med: 6, low: 9, biz: 12}[stab] || 6;
+  // Adjustments
+  let months = baseMonths;
+  if(dep >= 3) months += 2;
+  else if(dep >= 1) months += 1;
+  if(earners === 1) months += 1;
+  // EMI loaded? Add a small buffer
+  if(emi > 0) months += 1;
+  months = Math.min(Math.max(months, 3), 18);
+
+  const monthlyOutflow = expenses + emi;
+  const target = monthlyOutflow * months;
+  const gap = current - target;  // positive = surplus, negative = shortfall
+  const pct = target > 0 ? Math.min(current / target * 100, 100) : 0;
+
+  // Allocation suggestion: 1 month in SA, 2 months in liquid funds, rest in short-term FD
+  const oneMonth = monthlyOutflow;
+  const sa = Math.min(oneMonth, target);
+  const lf = Math.min(2 * oneMonth, Math.max(target - sa, 0));
+  const st = Math.max(target - sa - lf, 0);
+
+  set('ef-target', fmt(target));
+  set('ef-months', months + ' months of expenses + EMI');
+  set('ef-outflow', fmt(monthlyOutflow));
+  set('ef-gap', fmt(gap));
+  set('ef-pct', pct.toFixed(0) + '%');
+  document.getElementById('ef-bar').style.width = pct + '%';
+  set('ef-sa', fmt(sa));
+  set('ef-lf', fmt(lf));
+  set('ef-st', fmt(st));
+
+  const note = gap >= 0
+    ? '✓ You are fully funded. Consider redirecting future savings to long-term investments.'
+    : 'You need ' + fmt(-gap) + ' more to be fully covered. At a savings rate of ₹10,000/month it would take ~' + Math.ceil(-gap/10000) + ' months.';
+  document.getElementById('ef-note').textContent = note;
+}
+
+// ─── LOAN PREPAYMENT CALCULATOR ──────────────────────────────
+function calcPrepay(){
+  const P = v('pp-principal');
+  const annRate = v('pp-rate') / 100;
+  const years = v('pp-tenure');
+  const lump = v('pp-lump');
+  const extra = v('pp-extra');
+  const mode = document.getElementById('pp-mode').value;
+
+  const r = annRate / 12;
+  const n = years * 12;
+  // Original monthly EMI on P
+  const origEMI = r > 0 ? P * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1) : P/n;
+  const origTotalInterest = origEMI * n - P;
+
+  // Simulate WITHOUT prepayment for the chart
+  const labelsM = [], balOrig = [], balNew = [];
+  let bO = P;
+  for(let m=1; m<=n; m++){
+    const i = bO * r;
+    const pr = Math.min(origEMI - i, bO);
+    bO -= pr;
+    if(m % 12 === 0 || m === n){ labelsM.push('Y'+(m/12)); balOrig.push(Math.max(bO,0)); }
+    if(bO <= 0) break;
+  }
+
+  // Simulate WITH prepayment
+  // Start: apply lump immediately, then EMI = origEMI + extra (for tenure mode) OR recompute EMI to keep tenure with new principal (for emi mode)
+  let bN = Math.max(P - lump, 0);
+  let payEMI;
+  let newTenureMonths = n;
+  if(mode === 'emi'){
+    // Keep tenure same, lower EMI based on new principal, plus extra is unusual — interpret extra as additional monthly prepay on top of new EMI
+    payEMI = r > 0 ? bN * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1) : bN/n;
+    // extra is treated as a further prepayment each month → may also reduce tenure
+  } else {
+    // Reduce tenure: keep EMI at original (so payment burden same after extra)
+    payEMI = origEMI;
+  }
+  let totalIntNew = 0;
+  let totalPayNew = lump;
+  let monthsToClose = 0;
+  const maxM = n + 12; // safety cap
+  const balNewMonthly = [];
+  for(let m=1; m<=maxM; m++){
+    if(bN <= 0){ break; }
+    const interest = bN * r;
+    let payment = payEMI + extra;
+    if(payment > bN + interest) payment = bN + interest;
+    const principal = payment - interest;
+    bN -= principal;
+    if(bN < 0.01) bN = 0;
+    totalIntNew += interest;
+    totalPayNew += payment;
+    monthsToClose = m;
+    balNewMonthly.push(bN);
+    if(bN <= 0) break;
+  }
+  // Build balNew aligned to labelsM (use yearly samples)
+  const sampleEvery = 12;
+  let yi = 1;
+  for(let m=sampleEvery; m<=balNewMonthly.length; m+=sampleEvery){
+    if(yi > labelsM.length) break;
+    balNew.push(balNewMonthly[m-1]);
+    yi++;
+  }
+  // Pad zeros if loan closed early (so chart is same length as labelsM)
+  while(balNew.length < labelsM.length) balNew.push(0);
+
+  const newYears = monthsToClose / 12;
+  const interestSaved = origTotalInterest - totalIntNew;
+
+  set('pp-orig-emi', fmt(origEMI));
+  set('pp-new-emi', fmt(mode === 'emi' ? payEMI : origEMI));
+  set('pp-int-saved', fmt(Math.max(interestSaved, 0)));
+  set('pp-orig-tenure', years.toFixed(0) + ' yrs');
+  // Pretty tenure: years + months if not whole
+  const newYrs = Math.floor(newYears);
+  const newMos = Math.round((newYears - newYrs) * 12);
+  const newTenStr = newMos === 0 ? newYrs + ' yrs' : newYrs + 'y ' + newMos + 'm';
+  set('pp-new-tenure', newTenStr);
+
+  makeChart('ppChart','line',{
+    labels: labelsM,
+    datasets:[
+      {label:'Without Prepayment',data: balOrig.map(b=>Math.round(b)), borderColor:'#F87171', backgroundColor:'rgba(176,48,48,0.06)', fill:true, tension:0.3, pointRadius:0},
+      {label:'With Prepayment',  data: balNew.map(b=>Math.round(b)),  borderColor:'#34D399', backgroundColor:'rgba(52,211,153,0.10)', fill:true, tension:0.3, pointRadius:0}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:12}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── TAX CALCULATOR ──────────────────────────────────────────
+function calcTax(){
+  const grossIncome = v('tax-income') + v('tax-other');
+  const hra        = Math.min(v('tax-hra'), grossIncome);
+  const c80        = Math.min(v('tax-80c'), 150000);
+  const c80d       = Math.min(v('tax-80d'), 75000);
+  const homeLoan   = Math.min(v('tax-homeloan'), 200000);
+  const nps        = v('tax-nps');
+  const otherDed   = v('tax-other-ded');
+  const ageGroup   = document.getElementById('tax-age').value;
+  const stdDed     = 50000;
+
+  // ── OLD REGIME ──
+  const oldTaxable = Math.max(grossIncome - stdDed - hra - c80 - c80d - homeLoan - nps - otherDed, 0);
+  const oldTax     = computeOldTax(oldTaxable, ageGroup);
+
+  // ── NEW REGIME (FY2024-25: std ded ₹75k from Jul'24 → use 75k for simplicity as it benefits new regime) ──
+  // New regime std deduction is ₹75,000 (Budget 2024), NPS employer (80CCD2) still allowed
+  const newStdDed  = 75000;
+  const newTaxable = Math.max(grossIncome - newStdDed - nps, 0);
+  const newTax     = computeNewTax(newTaxable);
+
+  const oldInhand  = (grossIncome - oldTax) / 12;
+  const newInhand  = (grossIncome - newTax) / 12;
+  const oldRate    = grossIncome > 0 ? (oldTax / grossIncome * 100) : 0;
+  const newRate    = grossIncome > 0 ? (newTax / grossIncome * 100) : 0;
+  const saving     = Math.abs(oldTax - newTax);
+  const betterNew  = newTax <= oldTax;
+
+  document.getElementById('tax-old-taxable').textContent = fmt(oldTaxable);
+  document.getElementById('tax-old-tax').textContent     = fmt(oldTax);
+  document.getElementById('tax-old-rate').textContent    = oldRate.toFixed(2) + '%';
+  document.getElementById('tax-old-inhand').textContent  = fmt(oldInhand);
+  document.getElementById('tax-new-taxable').textContent = fmt(newTaxable);
+  document.getElementById('tax-new-tax').textContent     = fmt(newTax);
+  document.getElementById('tax-new-rate').textContent    = newRate.toFixed(2) + '%';
+  document.getElementById('tax-new-inhand').textContent  = fmt(newInhand);
+
+  const verdict = document.getElementById('tax-verdict');
+  if(saving < 1000){
+    verdict.style.background = 'var(--surface2)';
+    verdict.style.color = 'var(--text2)';
+    verdict.textContent = 'Both regimes are roughly equal. New Regime is simpler (no proof submission).';
+  } else if(betterNew){
+    verdict.style.background = 'var(--accent-l)';
+    verdict.style.color = 'var(--accent)';
+    verdict.textContent = `✓ New Regime saves you ${fmt(saving)} per year (${fmt(saving/12)}/mo)`;
+  } else {
+    verdict.style.background = 'var(--blue-l)';
+    verdict.style.color = 'var(--blue)';
+    verdict.textContent = `✓ Old Regime saves you ${fmt(saving)} per year (${fmt(saving/12)}/mo)`;
+  }
+
+  // Slab breakdown for old regime
+  const tbody = document.getElementById('tax-slab-tbody');
+  tbody.innerHTML = '';
+  const slabs = getOldSlabs(ageGroup);
+  let prev = 0, taxSoFar = 0;
+  slabs.forEach(([limit, rate]) => {
+    const taxable = Math.min(Math.max(oldTaxable - prev, 0), limit - prev);
+    if(taxable <= 0 && prev >= oldTaxable) return;
+    const slabTax = taxable * rate;
+    taxSoFar += slabTax;
+    const tr = document.createElement('tr');
+    const slabLabel = limit === Infinity ? `Above ${fmt(prev)}` : `${fmt(prev)} – ${fmt(limit)}`;
+    tr.innerHTML = `<td>${slabLabel}</td><td>${(rate*100).toFixed(0)}%</td><td>${fmt(taxable)}</td><td>${fmt(slabTax)}</td>`;
+    tbody.appendChild(tr);
+    prev = limit;
+    if(oldTaxable <= limit) return;
+  });
+
+  // Bar chart comparison
+  makeChart('taxChart','bar',{
+    labels:['Gross Income','Old Regime\nTaxable','New Regime\nTaxable','Old Tax\n(+cess)','New Tax\n(+cess)'],
+    datasets:[
+      {label:'Old',data:[grossIncome,oldTaxable,null,oldTax,null],backgroundColor:'#60A5FA',borderRadius:4},
+      {label:'New',data:[null,null,newTaxable,null,newTax],backgroundColor:'#34D399',borderRadius:4}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+function getOldSlabs(age){
+  if(age === 'super') return [[500000,0],[1000000,0.2],[Infinity,0.3]];
+  if(age === 'senior') return [[300000,0],[500000,0.05],[1000000,0.2],[Infinity,0.3]];
+  return [[250000,0],[500000,0.05],[1000000,0.2],[Infinity,0.3]];
+}
+function computeOldTax(taxable, age){
+  const slabs = getOldSlabs(age);
+  let prev=0, tax=0;
+  for(const [limit,rate] of slabs){
+    if(taxable <= prev) break;
+    tax += (Math.min(taxable,limit) - prev) * rate;
+    prev = limit;
+  }
+  // 87A rebate: if taxable ≤ 5L, full rebate (for general/senior)
+  if(age !== 'super' && taxable <= 500000) tax = 0;
+  return Math.round(tax * 1.04); // 4% cess
+}
+function computeNewTax(taxable){
+  // New regime slabs FY2024-25
+  const slabs = [[300000,0],[600000,0.05],[900000,0.10],[1200000,0.15],[1500000,0.20],[Infinity,0.30]];
+  let prev=0, tax=0;
+  for(const [limit,rate] of slabs){
+    if(taxable <= prev) break;
+    tax += (Math.min(taxable,limit) - prev) * rate;
+    prev = limit;
+  }
+  // 87A rebate: if taxable ≤ 7L, full rebate
+  if(taxable <= 700000) tax = 0;
+  return Math.round(tax * 1.04);
+}
+
+// ─── BUY VS RENT ─────────────────────────────────────────────
+function calcRentBuy(){
+  const price    = v('rb-price');
+  const down     = v('rb-down');
+  const loanAmt  = Math.max(price - down, 0);
+  const lRate    = v('rb-lrate') / 100;
+  const lTenure  = v('rb-ltenure');
+  const rent0    = v('rb-rent');
+  const rInc     = v('rb-rinc') / 100;
+  const appr     = v('rb-appr') / 100;
+  const invRet   = v('rb-inv') / 100;
+  const maintPct = v('rb-maint') / 100;
+
+  // Buying costs: stamp duty ~6% + registration ~1%
+  const buyCosts  = price * 0.07;
+  const rMonthly  = lRate / 12;
+  const nMonths   = lTenure * 12;
+  const emi       = rMonthly > 0 ? loanAmt * rMonthly * Math.pow(1+rMonthly,nMonths) / (Math.pow(1+rMonthly,nMonths)-1) : loanAmt/nMonths;
+
+  document.getElementById('rb-emi').textContent      = fmt(emi);
+  document.getElementById('rb-rent-show').textContent = fmt(rent0);
+
+  // Year-by-year simulation
+  let loanBal  = loanAmt;
+  let propVal  = price + buyCosts; // Buyer "spent" price+costs
+  let propMktVal = price;          // Market value for NW calc
+  // Rent net worth: down payment + buying-costs invested; monthly savings vs EMI also invested
+  let rentNW   = (down + buyCosts) * 1; // deployed as investments at start
+  let curRent  = rent0;
+  let breakEvenYear = null;
+
+  const years  = Math.max(lTenure, 20);
+  const labels=[], buyArr=[], rentArr=[];
+  const tbody  = document.getElementById('rb-tbody');
+  tbody.innerHTML = '';
+
+  for(let y = 1; y <= years; y++){
+    // --- BUYER ---
+    let yMaint = 0;
+    for(let m = 0; m < 12; m++){
+      if(loanBal > 0){
+        const interest = loanBal * rMonthly;
+        const principal = Math.min(emi - interest, loanBal);
+        loanBal = Math.max(loanBal - principal, 0);
+      }
+      yMaint += (propMktVal * maintPct / 12);
+    }
+    propMktVal *= (1 + appr);
+    const buyNetWorth = propMktVal - loanBal;
+
+    // --- RENTER ---
+    // They invest: down payment (already in pool) + each month (emi - rent) if positive
+    const monthlyDiff = emi - curRent;
+    const annualExtra = monthlyDiff * 12;
+    // Grow existing + add savings
+    rentNW = rentNW * (1 + invRet) + (annualExtra > 0 ? annualExtra : 0);
+    // If renter pays more rent than EMI, their savings pile grows less — but let's also track rent paid > emi as a cost
+    if(annualExtra < 0) rentNW += annualExtra; // negative: rent > emi drains investable
+    curRent *= (1 + rInc);
+
+    labels.push('Y' + y);
+    buyArr.push(Math.round(buyNetWorth));
+    rentArr.push(Math.round(rentNW));
+
+    if(!breakEvenYear && buyNetWorth >= rentNW) breakEvenYear = y;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>Year ${y}</td><td>${fmt(propMktVal)}</td><td>${fmt(loanBal)}</td><td class="${buyNetWorth>=rentNW?'positive':''}">${fmt(buyNetWorth)}</td><td>${fmt(rentNW)}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('rb-breakeven').textContent = breakEvenYear ? 'Year ' + breakEvenYear : 'Not in range';
+
+  const finalBuy  = buyArr[buyArr.length-1];
+  const finalRent = rentArr[rentArr.length-1];
+  const verdict   = document.getElementById('rb-verdict');
+  if(breakEvenYear){
+    verdict.style.background = 'var(--accent-l)'; verdict.style.color = 'var(--accent)';
+    verdict.textContent = `Buying breaks even by Year ${breakEvenYear}. After ${lTenure} yrs, buying ahead by ${fmt(finalBuy - finalRent)}.`;
+  } else {
+    verdict.style.background = 'var(--blue-l)'; verdict.style.color = 'var(--blue)';
+    verdict.textContent = `Renting + investing leads by ${fmt(finalRent - finalBuy)} over ${years} years. Consider a higher property appreciation rate to tip the balance.`;
+  }
+
+  makeChart('rbChart','line',{
+    labels,
+    datasets:[
+      {label:'Buy Net Worth',  data:buyArr,  borderColor:'#34D399', backgroundColor:'rgba(52,211,153,0.10)', fill:true, tension:0.3, pointRadius:0},
+      {label:'Rent Net Worth', data:rentArr, borderColor:'#60A5FA', backgroundColor:'rgba(96,165,250,0.08)',  fill:true, tension:0.3, pointRadius:0}
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtShort(c.raw)}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11},maxTicksLimit:12}},y:{ticks:{callback:v=>fmtShort(v),font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}}
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+window.onload = () => {
+  initTheme();
+  // Mount scenario panels into each calculator's left column
+  ['sip','emi','lumpsum','stepup','swp','retirement','fire','goal','inflation','networth','emergency','prepay','tax','rentbuy'].forEach(mountScenarioPanel);
+  // Initial calc
+  calcSIP(); calcEMI(); calcLumpsum(); calcStepUp(); calcSWP(); calcRetirement();
+  calcFire(); calcGoal(); calcInflation(); calcNetWorth();
+  calcEmergency(); calcPrepay(); calcTax(); calcRentBuy();
+  // Apply URL state if present
+  const urlState = loadFromURL();
+  if(urlState){
+    applyCalcState(urlState.calc, urlState.state);
+    // Navigate to that calc's tab
+    const btn = document.querySelector(`.nav-tab[onclick*="showPage('${urlState.calc}'"]`);
+    if(btn) showPage(urlState.calc, btn);
+    toast('Loaded shared scenario');
+  }
+};
+</script>
+</body>
+</html>
